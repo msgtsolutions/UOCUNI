@@ -26,7 +26,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 900px;
+    max-width: 1000px;
 }
 
 .card {
@@ -55,6 +55,7 @@ h1 {
     text-align: center;
     transition: .2s;
     background: #0b1220;
+    cursor: pointer;
 }
 
 .upload-box:hover,
@@ -160,7 +161,7 @@ select:focus {
     white-space: pre-line;
 }
 
-button {
+button.generate {
     width: 100%;
     margin-top: 20px;
     border: 0;
@@ -173,11 +174,11 @@ button {
     cursor: pointer;
 }
 
-button:hover {
+button.generate:hover {
     background: #1d4ed8;
 }
 
-button:disabled {
+button.generate:disabled {
     background: #334155;
     cursor: not-allowed;
 }
@@ -196,6 +197,10 @@ button:disabled {
     color: #fca5a5;
 }
 
+.warning {
+    color: #facc15;
+}
+
 .preview {
     margin-top: 20px;
     overflow: auto;
@@ -208,7 +213,7 @@ button:disabled {
 table {
     border-collapse: collapse;
     width: 100%;
-    min-width: 1000px;
+    min-width: 1100px;
     font-size: 12px;
 }
 
@@ -225,6 +230,19 @@ th {
     top: 0;
     background: #172033;
     z-index: 1;
+}
+
+.debug {
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 10px;
+    background: #020617;
+    border: 1px solid #263244;
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    display: none;
 }
 
 .small {
@@ -253,99 +271,104 @@ th {
 <body>
 
 <div class="container">
-    <div class="card">
+<div class="card">
 
-        <h1>Generador CSV — Licitación 484012</h1>
+<h1>Generador CSV — Licitación 484012</h1>
 
-        <p class="subtitle">
-            Cargá el cuadro de adjudicación en Excel (.xlsx o .xls)
-            y generá el CSV respetando la estructura del archivo de referencia.
-        </p>
+<p class="subtitle">
+Cargá el cuadro de adjudicación en Excel (.xlsx o .xls)
+y generá el CSV respetando la estructura del archivo de referencia.
+</p>
 
-        <div class="upload-box" id="dropZone">
+<div class="upload-box" id="dropZone">
 
-            <div class="upload-icon">📄</div>
+<div class="upload-icon">📄</div>
 
-            <strong>Archivo Excel</strong>
+<strong>Archivo Excel</strong>
 
-            <span id="fileName">
-                Ningún archivo seleccionado
-            </span>
+<span id="fileName">
+Ningún archivo seleccionado
+</span>
 
-            <button
-                type="button"
-                class="select-btn"
-                id="selectBtn">
-                SELECCIONAR EXCEL
-            </button>
+<button
+type="button"
+class="select-btn"
+id="selectBtn">
+SELECCIONAR EXCEL
+</button>
 
-            <small>
-                Formatos permitidos: .xlsx y .xls
-            </small>
+<small>
+Formatos permitidos: .xlsx y .xls
+</small>
 
-        </div>
+</div>
 
-        <input
-            id="excelFile"
-            type="file"
-            accept=".xlsx,.xls">
+<input
+id="excelFile"
+type="file"
+accept=".xlsx,.xls">
 
-        <div class="grid">
+<div class="grid">
 
-            <div class="field">
-                <label for="lotSelect">
-                    Lote a generar
-                </label>
+<div class="field">
+<label for="lotSelect">
+Lote a generar
+</label>
 
-                <select id="lotSelect" disabled>
-                    <option value="">
-                        Cargá primero el Excel
-                    </option>
-                </select>
-            </div>
+<select id="lotSelect" disabled>
+<option value="">
+Cargá primero el Excel
+</option>
+</select>
+</div>
 
-            <div class="field">
-                <label for="ruc">
-                    RUC del proveedor
-                </label>
+<div class="field">
+<label for="ruc">
+RUC del proveedor
+</label>
 
-                <input
-                    id="ruc"
-                    type="text"
-                    placeholder="Ej.: 80048624">
-            </div>
+<input
+id="ruc"
+type="text"
+placeholder="Ej.: 80048624">
+</div>
 
-            <div class="field full">
-                <label for="provider">
-                    Proveedor
-                </label>
+<div class="field full">
+<label for="provider">
+Proveedor
+</label>
 
-                <input
-                    id="provider"
-                    type="text"
-                    placeholder="Nombre del proveedor">
-            </div>
+<input
+id="provider"
+type="text"
+placeholder="Nombre del proveedor">
+</div>
 
-        </div>
+</div>
 
-        <div class="info" id="info">
-            Todavía no se cargó ningún archivo.
-        </div>
+<div class="info" id="info">
+Todavía no se cargó ningún archivo.
+</div>
 
-        <button id="generateBtn" disabled>
-            GENERAR CSV
-        </button>
+<button
+class="generate"
+id="generateBtn"
+disabled>
+GENERAR CSV
+</button>
 
-        <div class="status" id="status"></div>
+<div class="status" id="status"></div>
 
-        <div class="preview" id="preview"></div>
+<div class="preview" id="preview"></div>
 
-        <div class="small">
-            El archivo Excel no se sube a ningún servidor.
-            Todo el procesamiento se realiza en el navegador.
-        </div>
+<div class="debug" id="debug"></div>
 
-    </div>
+<div class="small">
+El archivo Excel no se sube a ningún servidor.
+Todo el procesamiento se realiza en el navegador.
+</div>
+
+</div>
 </div>
 
 <script>
@@ -402,6 +425,7 @@ const generateBtn = document.getElementById("generateBtn");
 const statusBox = document.getElementById("status");
 const infoBox = document.getElementById("info");
 const previewBox = document.getElementById("preview");
+const debugBox = document.getElementById("debug");
 
 let workbook = null;
 let lots = [];
@@ -498,16 +522,13 @@ async function loadExcel(file) {
     statusBox.className = "status";
 
     previewBox.style.display = "none";
+    debugBox.style.display = "none";
 
     if (!file) {
         showError("No se seleccionó ningún archivo.");
         return;
     }
 
-    /*
-     * No dependemos solamente de file.type porque
-     * algunos navegadores devuelven MIME vacío para .xls/.xlsx.
-     */
     if (!/\.(xlsx|xls)$/i.test(file.name)) {
 
         showError(
@@ -546,9 +567,11 @@ async function loadExcel(file) {
 
         if (!lots.length) {
 
+            showDebug();
+
             throw new Error(
                 "El Excel fue abierto correctamente, pero no se " +
-                "detectaron lotes con ítems adjudicados."
+                "detectaron tablas de ítems compatibles."
             );
         }
 
@@ -628,18 +651,6 @@ function extractLots(wb) {
 
     wb.SheetNames.forEach(function(sheetName) {
 
-        const normalizedSheet =
-            normalize(sheetName);
-
-        /*
-         * La hoja de ítems generales no contiene adjudicación.
-         */
-        if (
-            normalizedSheet.startsWith("items")
-        ) {
-            return;
-        }
-
         const ws = wb.Sheets[sheetName];
 
         if (!ws) {
@@ -653,6 +664,10 @@ function extractLots(wb) {
                 raw: true
             });
 
+        if (!rows.length) {
+            return;
+        }
+
         console.log(
             "Procesando hoja:",
             sheetName,
@@ -664,44 +679,39 @@ function extractLots(wb) {
         let sheetRuc = "";
 
         /*
-         * Buscar proveedor/RUC en las primeras filas.
+         * Buscar proveedor y RUC en toda la parte
+         * inicial de la hoja.
          */
         for (
             let i = 0;
-            i < Math.min(rows.length, 25);
+            i < Math.min(rows.length, 40);
             i++
         ) {
 
-            const row = rows[i];
-
-            const rowText =
-                row
-                    .map(function(v) {
-                        return String(v ?? "");
-                    })
+            const text =
+                rows[i]
+                    .map(v => clean(v))
+                    .filter(Boolean)
                     .join(" ");
 
-            if (/Adjudicado\s*:/i.test(rowText)) {
+            const parsed =
+                parseProvider(text);
 
-                const parsed =
-                    parseProvider(rowText);
-
-                if (parsed.name) {
-                    sheetProvider =
-                        parsed.name;
-                }
-
-                if (parsed.ruc) {
-                    sheetRuc =
-                        parsed.ruc;
-                }
+            if (parsed.name && !sheetProvider) {
+                sheetProvider = parsed.name;
             }
 
+            if (parsed.ruc && !sheetRuc) {
+                sheetRuc = parsed.ruc;
+            }
         }
 
 
+        /*
+         * Buscar todas las tablas de ítems.
+         */
         let currentLot = null;
-        let headerFound = false;
+        let columnMap = null;
 
         for (
             let i = 0;
@@ -713,11 +723,8 @@ function extractLots(wb) {
 
             const cells =
                 row.map(function(v) {
-                    return String(v ?? "").trim();
+                    return clean(v);
                 });
-
-            const firstCell =
-                cells[0] || "";
 
             const whole =
                 cells
@@ -726,161 +733,123 @@ function extractLots(wb) {
                     .trim();
 
 
-            /* -------------------------------------------------
-               DETECTAR LOTE
-            ------------------------------------------------- */
+            /*
+             * DETECTAR LOTE
+             */
+            const lotData =
+                detectLot(cells, whole);
 
-            const lotText =
-                findLotText(cells);
+            if (lotData) {
 
-            if (lotText) {
-
-                /*
-                 * Guardar el lote anterior.
-                 */
                 if (
                     currentLot &&
                     currentLot.items.length
                 ) {
-
                     result.push(currentLot);
-
                 }
 
-                currentLot =
-                    parseLotHeader(lotText);
-
-                currentLot.sheetName =
-                    sheetName;
-
-                currentLot.provider =
-                    sheetProvider;
-
-                currentLot.ruc =
-                    sheetRuc;
-
-                headerFound = false;
-
-                continue;
-            }
-
-
-            /* -------------------------------------------------
-               DETECTAR ENCABEZADO DE ÍTEMS
-            ------------------------------------------------- */
-
-            const normalizedFirst =
-                normalize(firstCell);
-
-            const normalizedSecond =
-                normalize(cells[1] || "");
-
-            const normalizedWhole =
-                normalize(whole);
-
-            /*
-             * Forma normal:
-             * Item | Codigo Catalogo | ...
-             */
-            if (
-                normalizedFirst === "item" &&
-                normalizedSecond === "codigo catalogo"
-            ) {
-
-                headerFound = true;
-                continue;
-            }
-
-            /*
-             * También aceptamos encabezados aunque
-             * haya columnas vacías/intermedias.
-             */
-            if (
-                normalizedWhole.includes("codigo catalogo") &&
-                normalizedWhole.includes("item")
-            ) {
-
-                headerFound = true;
-                continue;
-            }
-
-
-            /* -------------------------------------------------
-               DETECTAR FILA DE ÍTEM
-            ------------------------------------------------- */
-
-            if (
-                headerFound &&
-                currentLot &&
-                isPositiveInteger(row[0]) &&
-                clean(row[1]) !== ""
-            ) {
-
-                const item = {
-
-                    item:
-                        toText(row[0]),
-
-                    code:
-                        clean(toText(row[1])),
-
-                    description:
-                        clean(toText(row[2])),
-
-                    quantity:
-                        toText(row[4]),
-
-                    characteristics:
-                        clean(toText(row[5])),
-
-                    price:
-                        toText(row[6])
-
+                currentLot = {
+                    number: lotData.number,
+                    group: lotData.group,
+                    faculty: lotData.faculty,
+                    contractOpen: "Si",
+                    simultaneous: lotData.simultaneous || "No",
+                    sheetName: sheetName,
+                    provider: sheetProvider,
+                    ruc: sheetRuc,
+                    items: []
                 };
 
+                columnMap = null;
+
+                continue;
+            }
+
+
+            /*
+             * DETECTAR ENCABEZADO DE TABLA.
+             */
+            const detectedMap =
+                detectHeaderRow(cells);
+
+            if (detectedMap) {
+
+                columnMap = detectedMap;
+
                 /*
-                 * Evitar interpretar filas que no sean
-                 * códigos de catálogo.
+                 * Si no había un lote explícito,
+                 * creamos uno para la tabla encontrada.
                  */
-                if (item.code) {
+                if (!currentLot) {
+
+                    currentLot = {
+                        number: detectNumberFromSheet(sheetName),
+                        group: "1",
+                        faculty: extractFacultyFromRows(rows, i),
+                        contractOpen: "Si",
+                        simultaneous: "No",
+                        sheetName: sheetName,
+                        provider: sheetProvider,
+                        ruc: sheetRuc,
+                        items: []
+                    };
+                }
+
+                continue;
+            }
+
+
+            /*
+             * DETECTAR FILAS DE ÍTEMS.
+             */
+            if (
+                currentLot &&
+                columnMap &&
+                isItemRow(row, columnMap)
+            ) {
+
+                const item =
+                    extractItem(row, columnMap);
+
+                if (item) {
 
                     currentLot.items.push(item);
 
                 }
-
             }
-
         }
 
 
         /*
-         * Guardar último lote de la hoja.
+         * Guardar último lote.
          */
         if (
             currentLot &&
             currentLot.items.length
         ) {
-
             result.push(currentLot);
-
         }
 
     });
 
 
-    /* =====================================================
-       ELIMINAR DUPLICADOS
-    ===================================================== */
-
+    /*
+     * Eliminar duplicados.
+     */
     const unique = [];
     const seen = new Set();
 
     result.forEach(function(lot) {
 
         const key =
-            lot.number +
-            "|" +
-            lot.sheetName;
+            [
+                lot.sheetName,
+                lot.number,
+                lot.group,
+                lot.items
+                    .map(i => i.item + "|" + i.code)
+                    .join(",")
+            ].join("|");
 
         if (!seen.has(key)) {
 
@@ -896,181 +865,472 @@ function extractLots(wb) {
 
 
 /* =========================================================
-   ENCONTRAR TEXTO DE LOTE
+   DETECTAR LOTE
 ========================================================= */
 
-function findLotText(cells) {
+function detectLot(cells, whole) {
+
+    let text = "";
 
     for (const cell of cells) {
 
+        if (
+            /^lote\b/i.test(cell)
+        ) {
+            text = cell;
+            break;
+        }
+    }
+
+    if (!text) {
+
+        const match =
+            whole.match(
+                /\bLote\s+([IVXLCDM]+|\d+)(.*)$/i
+            );
+
+        if (match) {
+            text = match[0];
+        }
+    }
+
+    if (!text) {
+        return null;
+    }
+
+
+    let number = "";
+
+    const numberMatch =
+        text.match(
+            /\bLote\s+([IVXLCDM]+|\d+)/i
+        );
+
+    if (numberMatch) {
+
+        const raw =
+            numberMatch[1];
+
+        if (/^\d+$/.test(raw)) {
+            number = raw;
+        } else {
+            number = romanToNumber(raw);
+        }
+    }
+
+
+    let group = "1";
+
+    const groupMatch =
+        text.match(
+            /\bGrupo\s*[:\-]?\s*(\d+)/i
+        );
+
+    if (groupMatch) {
+        group = groupMatch[1];
+    }
+
+
+    let simultaneous = "No";
+
+    const simMatch =
+        text.match(
+            /Abastecimiento\s+Simult[aá]neo\s*[:\-]?\s*([Ss][ií]|[Nn][Oo])/i
+        );
+
+    if (simMatch) {
+
+        simultaneous =
+            /^s/i.test(simMatch[1])
+                ? "Si"
+                : "No";
+    }
+
+
+    let faculty =
+        text
+            .replace(
+                /\bLote\s+([IVXLCDM]+|\d+)\b/i,
+                ""
+            )
+            .replace(
+                /\bGrupo\s*[:\-]?\s*\d+/i,
+                ""
+            )
+            .replace(
+                /\bAbastecimiento\s+Simult[aá]neo\s*[:\-]?\s*[Ss][ií]/i,
+                ""
+            )
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .replace(
+                /^[\s\-:]+|[\s\-:]+$/g,
+                ""
+            )
+            .trim();
+
+
+    return {
+        number: number || "1",
+        group,
+        faculty,
+        simultaneous
+    };
+}
+
+
+/* =========================================================
+   DETECTAR ENCABEZADO
+========================================================= */
+
+function detectHeaderRow(cells) {
+
+    const normalized =
+        cells.map(normalize);
+
+    const map = {
+        item: -1,
+        code: -1,
+        description: -1,
+        quantity: -1,
+        characteristics: -1,
+        price: -1
+    };
+
+
+    for (let i = 0; i < normalized.length; i++) {
+
+        const value = normalized[i];
+
+        if (!value) {
+            continue;
+        }
+
+
+        /*
+         * ITEM
+         */
+        if (
+            map.item === -1 &&
+            (
+                value === "item" ||
+                value === "n item" ||
+                value === "nro item" ||
+                value === "numero item" ||
+                value.includes("numero item") ||
+                value.includes("nro item")
+            )
+        ) {
+            map.item = i;
+            continue;
+        }
+
+
+        /*
+         * CÓDIGO
+         */
+        if (
+            map.code === -1 &&
+            (
+                value === "codigo catalogo" ||
+                value === "codigo de catalogo" ||
+                value === "codigo" ||
+                value.includes("codigo catalogo") ||
+                value.includes("codigo de catalogo") ||
+                value.includes("codigo producto")
+            )
+        ) {
+            map.code = i;
+            continue;
+        }
+
+
+        /*
+         * DESCRIPCIÓN
+         */
+        if (
+            map.description === -1 &&
+            (
+                value === "descripcion" ||
+                value === "descripcion del producto" ||
+                value === "descripcion producto" ||
+                value.includes("descripcion del producto") ||
+                value.includes("descripcion del item") ||
+                value.includes("descripcion")
+            )
+        ) {
+            map.description = i;
+            continue;
+        }
+
+
+        /*
+         * CANTIDAD
+         */
+        if (
+            map.quantity === -1 &&
+            (
+                value === "cantidad" ||
+                value.includes("cantidad solicitada") ||
+                value.includes("cantidad total") ||
+                value.includes("cantidad adjudicada")
+            )
+        ) {
+            map.quantity = i;
+            continue;
+        }
+
+
+        /*
+         * CARACTERÍSTICAS
+         */
+        if (
+            map.characteristics === -1 &&
+            (
+                value.includes("caracteristica") ||
+                value.includes("características") ||
+                value.includes("especificacion") ||
+                value.includes("observacion")
+            )
+        ) {
+            map.characteristics = i;
+            continue;
+        }
+
+
+        /*
+         * PRECIO
+         */
+        if (
+            map.price === -1 &&
+            (
+                value.includes("precio") ||
+                value.includes("monto") ||
+                value.includes("importe")
+            )
+        ) {
+            map.price = i;
+            continue;
+        }
+    }
+
+
+    /*
+     * Una tabla compatible debe tener como mínimo
+     * ITEM + CÓDIGO.
+     */
+    if (
+        map.item !== -1 &&
+        map.code !== -1
+    ) {
+        return map;
+    }
+
+
+    /*
+     * Segundo método:
+     * detectar mediante el texto completo de la fila.
+     */
+    const joined =
+        normalized
+            .filter(Boolean)
+            .join(" ");
+
+    if (
+        joined.includes("item") &&
+        (
+            joined.includes("codigo catalogo") ||
+            joined.includes("codigo de catalogo")
+        )
+    ) {
+
+        return map;
+    }
+
+
+    return null;
+}
+
+
+/* =========================================================
+   FILA DE ITEM
+========================================================= */
+
+function isItemRow(row, map) {
+
+    if (
+        !row ||
+        map.item < 0 ||
+        map.code < 0
+    ) {
+        return false;
+    }
+
+
+    const item =
+        clean(row[map.item]);
+
+    const code =
+        clean(row[map.code]);
+
+
+    if (!item || !code) {
+        return false;
+    }
+
+
+    /*
+     * Evitar filas que sean subtítulos.
+     */
+    if (
+        normalize(item) === "item" ||
+        normalize(code).includes("codigo")
+    ) {
+        return false;
+    }
+
+
+    /*
+     * El código de catálogo puede variar,
+     * por eso no exigimos un formato exacto.
+     */
+    const looksLikeCode =
+        /^[A-Za-z0-9][A-Za-z0-9._\/-]{2,}$/.test(code);
+
+
+    /*
+     * El número de ítem puede venir como:
+     * 1
+     * 2
+     * 01
+     * 1.0
+     */
+    const looksLikeItem =
+        /^\d+(?:\.0+)?$/.test(item);
+
+
+    return looksLikeItem && looksLikeCode;
+}
+
+
+/* =========================================================
+   EXTRAER ITEM
+========================================================= */
+
+function extractItem(row, map) {
+
+    const item =
+        clean(row[map.item]);
+
+    const code =
+        clean(row[map.code]);
+
+    if (!item || !code) {
+        return null;
+    }
+
+
+    let description = "";
+
+    if (map.description !== -1) {
+        description =
+            clean(row[map.description]);
+    }
+
+
+    let quantity = "";
+
+    if (map.quantity !== -1) {
+        quantity =
+            clean(row[map.quantity]);
+    }
+
+
+    let characteristics = "";
+
+    if (map.characteristics !== -1) {
+        characteristics =
+            clean(row[map.characteristics]);
+    }
+
+
+    let price = "";
+
+    if (map.price !== -1) {
+        price =
+            clean(row[map.price]);
+    }
+
+
+    return {
+        item: normalizeNumberText(item),
+        code: code,
+        description: description,
+        quantity: quantity,
+        characteristics: characteristics,
+        price: price
+    };
+}
+
+
+/* =========================================================
+   DETECTAR NÚMERO DESDE NOMBRE DE HOJA
+========================================================= */
+
+function detectNumberFromSheet(sheetName) {
+
+    const text = clean(sheetName);
+
+    const match =
+        text.match(
+            /(?:lote|lot)\s*[-_ ]*\s*(\d+|[IVXLCDM]+)/i
+        );
+
+    if (!match) {
+        return "1";
+    }
+
+    if (/^\d+$/.test(match[1])) {
+        return match[1];
+    }
+
+    return romanToNumber(match[1]);
+}
+
+
+/* =========================================================
+   EXTRAER FACULTAD
+========================================================= */
+
+function extractFacultyFromRows(rows, headerIndex) {
+
+    for (
+        let i = Math.max(0, headerIndex - 10);
+        i < headerIndex;
+        i++
+    ) {
+
         const text =
-            clean(cell);
+            rows[i]
+                .map(v => clean(v))
+                .filter(Boolean)
+                .join(" ")
+                .trim();
 
         if (!text) {
             continue;
         }
 
-        /*
-         * Ejemplos aceptados:
-         *
-         * Lote I - FACULTAD ... - Grupo 1
-         * Lote II - FACULTAD ... - Grupo 1
-         * Lote III - FACULTAD ... - Grupo 1
-         */
-
         if (
-            /^Lote\s+(I|II|III)\b/i.test(text)
+            /facultad|universidad|mantenimiento|edificios/i.test(text)
         ) {
-
             return text;
-
         }
-
     }
 
-    /*
-     * Segundo intento sobre toda la fila.
-     */
-    const joined =
-        cells
-            .filter(Boolean)
-            .join(" ");
-
-    const match =
-        joined.match(
-            /Lote\s+(I|II|III)\b.*?(?:Grupo\s+\d+)?/i
-        );
-
-    if (match) {
-        return match[0];
-    }
-
-    return "";
-}
-
-
-/* =========================================================
-   PARSEAR CABECERA DEL LOTE
-========================================================= */
-
-function parseLotHeader(text) {
-
-    const value =
-        clean(text);
-
-    let number = "";
-    let faculty = "";
-    let group = "1";
-
-    /*
-     * Obtener número romano.
-     */
-    const lotMatch =
-        value.match(
-            /Lote\s+(I|II|III)\b/i
-        );
-
-    if (lotMatch) {
-
-        number =
-            romanToNumber(
-                lotMatch[1]
-            );
-
-    }
-
-
-    /*
-     * Obtener grupo.
-     */
-    const groupMatch =
-        value.match(
-            /Grupo\s+(\d+)/i
-        );
-
-    if (groupMatch) {
-
-        group =
-            groupMatch[1];
-
-    }
-
-
-    /*
-     * Obtener descripción/facultad.
-     */
-    faculty =
-        value
-            .replace(
-                /^Lote\s+(I|II|III)\s*-\s*/i,
-                ""
-            )
-            .replace(
-                /\s*-\s*Grupo\s+\d+.*$/i,
-                ""
-            )
-            .trim();
-
-    const contract =
-        parseContract(value);
-
-    return {
-
-        number,
-
-        group,
-
-        faculty,
-
-        contractOpen:
-            contract.contractOpen,
-
-        simultaneous:
-            contract.simultaneous,
-
-        sheetName: "",
-
-        provider: "",
-
-        ruc: "",
-
-        items: []
-
-    };
-}
-
-
-/* =========================================================
-   CONTRATO
-========================================================= */
-
-function parseContract(text) {
-
-    const result = {
-
-        contractOpen: "Si",
-
-        simultaneous: "No"
-
-    };
-
-    const sim =
-        text.match(
-            /Abastecimiento\s+Simultaneo\s*:\s*([^,]+)/i
-        );
-
-    if (sim) {
-
-        result.simultaneous =
-            /^s[ií]$/i.test(
-                sim[1].trim()
-            )
-                ? "Si"
-                : "No";
-
-    }
-
-    return result;
+    return "Mantenimiento de Edificios de las Facultades - UNI 2026";
 }
 
 
@@ -1088,9 +1348,12 @@ function buildRows(lot) {
             catalogName(item.code);
 
         const productName =
-            item.description +
-            " - En Catálogo: " +
-            catalog;
+            item.description
+                ? item.description +
+                  " - En Catálogo: " +
+                  catalog
+                : " - En Catálogo: " +
+                  catalog;
 
 
         /*
@@ -1181,6 +1444,7 @@ function generateCSV() {
         return;
     }
 
+
     const index =
         Number(lotSelect.value);
 
@@ -1196,21 +1460,25 @@ function generateCSV() {
         return;
     }
 
+
     let provider =
         clean(providerInput.value);
 
     let ruc =
         clean(rucInput.value);
 
+
     if (!provider) {
         provider =
             lot.provider || "";
     }
 
+
     if (!ruc) {
         ruc =
             lot.ruc || "";
     }
+
 
     if (!provider) {
 
@@ -1220,6 +1488,7 @@ function generateCSV() {
 
         return;
     }
+
 
     if (!ruc) {
 
@@ -1244,7 +1513,7 @@ function generateCSV() {
         ruc;
 
     const observation =
-        "OBSERVACIÓN: En caso de que una fila no sera cargada eliminar la fila y los atributos de la lista. ";
+        "OBSERVACIÓN: En caso de que una fila no sera cargada eliminar la fila y los atributos de la lista.";
 
 
     const rows =
@@ -1275,10 +1544,7 @@ function generateCSV() {
     lines.push(
         HEADERS
             .map(function(value, index) {
-                return csvField(
-                    value,
-                    index
-                );
+                return csvField(value, index);
             })
             .join(";")
     );
@@ -1339,6 +1605,7 @@ function generateCSV() {
 
     a.remove();
 
+
     setTimeout(
         function() {
             URL.revokeObjectURL(url);
@@ -1354,6 +1621,7 @@ function generateCSV() {
         (lot.items.length * 3) +
         " filas de datos."
     );
+
 
     renderPreview(lot);
 }
@@ -1485,6 +1753,7 @@ function renderPreview(lot) {
 
         html += "<tr>";
 
+
         row.forEach(function(cell) {
 
             html +=
@@ -1493,6 +1762,7 @@ function renderPreview(lot) {
                 "</td>";
 
         });
+
 
         html += "</tr>";
 
@@ -1521,12 +1791,14 @@ function updateInfo() {
         return;
     }
 
+
     const lot =
         lots[
             Number(
                 lotSelect.value
             )
         ];
+
 
     if (!lot) {
         return;
@@ -1538,6 +1810,7 @@ function updateInfo() {
             lot.provider;
     }
 
+
     if (lot.ruc) {
         rucInput.value =
             lot.ruc;
@@ -1546,7 +1819,10 @@ function updateInfo() {
 
     infoBox.textContent =
 
-        "Lote: " +
+        "Hoja: " +
+        lot.sheetName +
+
+        "\nLote: " +
         lot.number +
 
         "\nFacultad: " +
@@ -1581,9 +1857,12 @@ function parseProvider(text) {
     let ruc = "";
 
 
+    /*
+     * Buscar RUC.
+     */
     const rucMatch =
         value.match(
-            /RUC\s*[:\-]?\s*([0-9.\-]+)/i
+            /\bRUC\s*[:\-]?\s*([0-9.\-]+)/i
         );
 
 
@@ -1599,25 +1878,41 @@ function parseProvider(text) {
                 /\s*[-–—]?\s*RUC\s*[:\-]?\s*[0-9.\-]+/i,
                 ""
             );
+    }
 
+
+    /*
+     * Solo considerar proveedor si
+     * la fila parece contener información
+     * de adjudicatario/proveedor.
+     */
+    if (
+        !/adjudic|proveedor|razon social|razón social/i.test(text) &&
+        !ruc
+    ) {
+        return {
+            name: "",
+            ruc: ""
+        };
     }
 
 
     value =
         value
             .replace(
-                /[-–—]\s*$/,
+                /^.*?(?:adjudicado\s*:|adjudicatario\s*:|proveedor\s*:|raz[oó]n\s+social\s*:)\s*/i,
+                ""
+            )
+            .replace(
+                /\s*[-–—]\s*$/,
                 ""
             )
             .trim();
 
 
     return {
-
         name: value,
-
         ruc: ruc
-
     };
 }
 
@@ -1671,6 +1966,20 @@ function toText(value) {
 }
 
 
+function normalizeNumberText(value) {
+
+    const text = clean(value);
+
+    if (
+        /^\d+\.0+$/.test(text)
+    ) {
+        return text.split(".")[0];
+    }
+
+    return text;
+}
+
+
 function clean(value) {
 
     return String(
@@ -1712,21 +2021,130 @@ function romanToNumber(value) {
 
     const v =
         String(value)
-            .toUpperCase();
+            .toUpperCase()
+            .trim();
 
-    if (v === "I") {
-        return "1";
+
+    const map = {
+        I: 1,
+        V: 5,
+        X: 10,
+        L: 50,
+        C: 100,
+        D: 500,
+        M: 1000
+    };
+
+
+    let total = 0;
+    let previous = 0;
+
+
+    for (
+        let i = v.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const current =
+            map[v[i]] || 0;
+
+
+        if (current < previous) {
+            total -= current;
+        } else {
+            total += current;
+        }
+
+
+        previous = current;
     }
 
-    if (v === "II") {
-        return "2";
+
+    return String(
+        total || v
+    );
+}
+
+
+/* =========================================================
+   DEBUG
+========================================================= */
+
+function showDebug() {
+
+    if (!workbook) {
+        return;
     }
 
-    if (v === "III") {
-        return "3";
-    }
 
-    return v;
+    let output =
+        "DIAGNÓSTICO DEL EXCEL\n\n";
+
+
+    output +=
+        "Hojas encontradas:\n";
+
+
+    workbook.SheetNames.forEach(function(name) {
+
+        const ws =
+            workbook.Sheets[name];
+
+        const rows =
+            XLSX.utils.sheet_to_json(
+                ws,
+                {
+                    header: 1,
+                    defval: "",
+                    raw: true
+                }
+            );
+
+
+        output +=
+            "\n• " +
+            name +
+            " — " +
+            rows.length +
+            " filas\n";
+
+
+        /*
+         * Mostrar las primeras filas para
+         * identificar estructuras no estándar.
+         */
+        rows
+            .slice(0, 15)
+            .forEach(function(row, index) {
+
+                const text =
+                    row
+                        .map(v => clean(v))
+                        .filter(Boolean)
+                        .join(" | ");
+
+
+                if (text) {
+
+                    output +=
+                        "  [" +
+                        index +
+                        "] " +
+                        text.substring(0, 400) +
+                        "\n";
+                }
+
+            });
+
+    });
+
+
+    debugBox.textContent =
+        output;
+
+    debugBox.style.display =
+        "block";
 }
 
 
@@ -1753,6 +2171,10 @@ function showError(message) {
         "status error";
 }
 
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
 
 function escapeHtml(value) {
 
