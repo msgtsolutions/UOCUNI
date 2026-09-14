@@ -3,440 +3,1785 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Convertidor XLSX → CSV</title>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<title>Generador CSV - Licitación 484012</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#17202a}
-.container{max-width:1100px;margin:35px auto;padding:0 18px}
-.card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 4px 18px rgba(0,0,0,.08);margin-bottom:18px}
-h1{margin:0 0 8px;font-size:26px}
-.subtitle{color:#68737d;margin-bottom:22px}
-label{display:block;font-weight:700;margin:15px 0 7px}
-input[type=file],select,input[type=text]{width:100%;padding:11px;border:1px solid #ccd3d9;border-radius:8px;background:#fff;font-size:14px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
-button{border:0;border-radius:8px;padding:12px 18px;font-weight:700;cursor:pointer}
-.primary{background:#1769e0;color:white}
-.secondary{background:#e9edf1;color:#17202a}
-button:disabled{opacity:.45;cursor:not-allowed}
-.status{padding:12px;border-radius:8px;background:#eef5ff;margin-top:15px;font-size:14px}
-.error{background:#fff0f0;color:#a30000}
-.ok{background:#edf9f0;color:#176b2d}
-.preview{overflow:auto;max-height:440px;border:1px solid #dde2e6;border-radius:8px;margin-top:15px}
-table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}
-th,td{border-bottom:1px solid #e5e8eb;padding:8px 10px;text-align:left}
-th{background:#f0f3f5;position:sticky;top:0;z-index:1}
-.small{font-size:12px;color:#68737d}
-.hidden{display:none}
-.check{display:flex;align-items:center;gap:8px;margin-top:15px}
-.check input{width:auto}
-@media(max-width:700px){.grid{grid-template-columns:1fr}.container{margin-top:15px}.card{padding:17px}}
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #0f172a;
+    color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+}
+
+.card {
+    background: #111827;
+    border: 1px solid #263244;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+
+h1 {
+    margin: 0 0 8px;
+    font-size: 25px;
+}
+
+.subtitle {
+    color: #9ca3af;
+    margin: 0 0 24px;
+    line-height: 1.5;
+}
+
+.upload-box {
+    border: 2px dashed #475569;
+    border-radius: 14px;
+    padding: 30px 20px;
+    text-align: center;
+    transition: .2s;
+    background: #0b1220;
+}
+
+.upload-box:hover,
+.upload-box.dragover {
+    border-color: #60a5fa;
+    background: #111c30;
+}
+
+.upload-icon {
+    font-size: 38px;
+    margin-bottom: 8px;
+}
+
+.upload-box strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 7px;
+}
+
+.upload-box span {
+    display: block;
+    color: #9ca3af;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.upload-box small {
+    display: block;
+    color: #64748b;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+input[type=file] {
+    display: none;
+}
+
+.select-btn {
+    width: auto !important;
+    margin: 0 !important;
+    padding: 11px 18px !important;
+    background: #2563eb;
+    color: white;
+    border: 0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.select-btn:hover {
+    background: #1d4ed8;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+label {
+    font-size: 13px;
+    color: #cbd5e1;
+    font-weight: bold;
+}
+
+input[type=text],
+select {
+    width: 100%;
+    border: 1px solid #374151;
+    border-radius: 9px;
+    padding: 12px;
+    background: #0b1220;
+    color: #fff;
+    outline: none;
+}
+
+input[type=text]:focus,
+select:focus {
+    border-color: #60a5fa;
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+.info {
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 10px;
+    background: #0b1220;
+    border: 1px solid #263244;
+    color: #cbd5e1;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+button {
+    width: 100%;
+    margin-top: 20px;
+    border: 0;
+    border-radius: 10px;
+    padding: 14px 18px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+button:disabled {
+    background: #334155;
+    cursor: not-allowed;
+}
+
+.status {
+    margin-top: 14px;
+    font-size: 14px;
+    min-height: 20px;
+}
+
+.ok {
+    color: #86efac;
+}
+
+.error {
+    color: #fca5a5;
+}
+
+.preview {
+    margin-top: 20px;
+    overflow: auto;
+    max-height: 330px;
+    border: 1px solid #263244;
+    border-radius: 10px;
+    display: none;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 1000px;
+    font-size: 12px;
+}
+
+th,
+td {
+    border-bottom: 1px solid #263244;
+    padding: 8px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    background: #172033;
+    z-index: 1;
+}
+
+.small {
+    margin-top: 16px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+@media (max-width: 650px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full {
+        grid-column: auto;
+    }
+
+    .card {
+        padding: 20px;
+    }
+}
 </style>
 </head>
+
 <body>
+
 <div class="container">
-  <div class="card">
-    <h1>XLSX → CSV</h1>
-    <div class="subtitle">Generador del CSV con la estructura exacta del formato de carga.</div>
+    <div class="card">
 
-    <label for="xlsx">Archivo Excel (.xlsx)</label>
-    <input id="xlsx" type="file" accept=".xlsx,.xls">
+        <h1>Generador CSV — Licitación 484012</h1>
 
-    <div id="sheetArea" class="hidden">
-      <div class="grid">
-        <div>
-          <label for="sheet">Hoja</label>
-          <select id="sheet"></select>
+        <p class="subtitle">
+            Cargá el cuadro de adjudicación en Excel (.xlsx o .xls)
+            y generá el CSV respetando la estructura del archivo de referencia.
+        </p>
+
+        <div class="upload-box" id="dropZone">
+
+            <div class="upload-icon">📄</div>
+
+            <strong>Archivo Excel</strong>
+
+            <span id="fileName">
+                Ningún archivo seleccionado
+            </span>
+
+            <button
+                type="button"
+                class="select-btn"
+                id="selectBtn">
+                SELECCIONAR EXCEL
+            </button>
+
+            <small>
+                Formatos permitidos: .xlsx y .xls
+            </small>
+
         </div>
-        <div>
-          <label for="section">Lote / sección</label>
-          <select id="section"></select>
-        </div>
-      </div>
 
-      <div class="check">
-        <input id="allSheets" type="checkbox">
-        <span>Procesar todos los lotes detectados de todas las hojas</span>
-      </div>
+        <input
+            id="excelFile"
+            type="file"
+            accept=".xlsx,.xls">
 
-      <div class="grid">
-        <div>
-          <label for="ruc">RUC del proveedor</label>
-          <input id="ruc" type="text" placeholder="Ej.: 80048624">
-          <div class="small">Si el RUC no aparece en el Excel, se puede introducir aquí.</div>
-        </div>
-        <div>
-          <label for="supplier">Proveedor</label>
-          <input id="supplier" type="text" placeholder="Se detecta automáticamente">
-        </div>
-      </div>
+        <div class="grid">
 
-      <div class="grid">
-        <div>
-          <label for="system">Sistema de adjudicación</label>
-          <input id="system" type="text" value="lote">
-        </div>
-        <div>
-          <label for="fileName">Nombre del CSV</label>
-          <input id="fileName" type="text" value="salida.csv">
-        </div>
-      </div>
+            <div class="field">
+                <label for="lotSelect">
+                    Lote a generar
+                </label>
 
-      <div id="status" class="status">Seleccione una hoja y un lote.</div>
+                <select id="lotSelect" disabled>
+                    <option value="">
+                        Cargá primero el Excel
+                    </option>
+                </select>
+            </div>
 
-      <div class="buttons">
-        <button class="primary" id="download" disabled>Generar y descargar CSV</button>
-        <button class="secondary" id="previewBtn" disabled>Actualizar vista previa</button>
-      </div>
+            <div class="field">
+                <label for="ruc">
+                    RUC del proveedor
+                </label>
+
+                <input
+                    id="ruc"
+                    type="text"
+                    placeholder="Ej.: 80048624">
+            </div>
+
+            <div class="field full">
+                <label for="provider">
+                    Proveedor
+                </label>
+
+                <input
+                    id="provider"
+                    type="text"
+                    placeholder="Nombre del proveedor">
+            </div>
+
+        </div>
+
+        <div class="info" id="info">
+            Todavía no se cargó ningún archivo.
+        </div>
+
+        <button id="generateBtn" disabled>
+            GENERAR CSV
+        </button>
+
+        <div class="status" id="status"></div>
+
+        <div class="preview" id="preview"></div>
+
+        <div class="small">
+            El archivo Excel no se sube a ningún servidor.
+            Todo el procesamiento se realiza en el navegador.
+        </div>
+
     </div>
-  </div>
-
-  <div class="card">
-    <strong>Vista previa</strong>
-    <div id="preview" class="preview">
-      <div style="padding:18px;color:#68737d">Cargue un archivo Excel para comenzar.</div>
-    </div>
-  </div>
 </div>
 
 <script>
-let workbook = null;
-let sheetsData = {};
-let detected = [];
+"use strict";
 
-const OUTPUT_HEADERS = [
- "Número Lote","Número Grupo","Número Item","Código de Producto",
- "Grupo Descripción","Nombre del Producto","Cantidad","Contrato Abierto",
- "Abastecimiento Simultáneo","Tipo Contrato Abierto","Cantidad Adjudicada",
- "Porcentaje de Distribución","Precio Unitario Adjudicado","Atributo",
- "Descripción Atributo"
+/* =========================================================
+   CONFIGURACIÓN
+========================================================= */
+
+const HEADERS = [
+    "Número Lote",
+    "Número Grupo",
+    "Número Item",
+    "Código de Producto",
+    "Grupo Descripción",
+    "Nombre del Producto",
+    "Cantidad",
+    "Contrato Abierto",
+    "Abastecimiento Simultáneo",
+    "Tipo Contrato Abierto",
+    "Cantidad Adjudicada",
+    "Porcentaje de Distribución",
+    "Precio Unitario Adjudicado",
+    "Atributo",
+    "Descripción Atributo"
 ];
 
-const $ = id => document.getElementById(id);
+const CATALOG_BY_CODE = {
+    "72101601-001": "Reparacion de techo",
+    "72101607-002": "Revestimiento de pared o muros",
+    "72102201-002": "Mantenimiento y reparacion de instalaciones electricas",
+    "72102304-001": "Mantenimiento y reparacion de Instalaciones sanitarias",
+    "72102602-004": "Colocacion de vidrios",
+    "72103003-001": "Servicio de Demolicion",
+    "72131601-002": "Preparacion de obra",
+    "72131601-005": "Mamposteria",
+    "72131601-008": "Revoques",
+    "72131601-009": "Colocacion de pisos - contrapisos",
+    "72131601-010": "Aberturas",
+    "72131601-012": "Servicio de pintura",
+    "72131601-013": "Limpieza de obra",
+    "80111613-9999": "Mano de Obra - Mantenimiento y/o reparación",
+    "92121702-001": "Mantenimiento y reparacion de Instalaciones electricas"
+};
 
-function norm(v){
-  return String(v ?? "")
-    .normalize("NFD").replace(/[\\u0300-\\u036f]/g,"")
-    .toLowerCase().trim();
-}
-function text(v){ return String(v ?? "").trim(); }
+const fileInput = document.getElementById("excelFile");
+const dropZone = document.getElementById("dropZone");
+const selectBtn = document.getElementById("selectBtn");
+const fileName = document.getElementById("fileName");
+const lotSelect = document.getElementById("lotSelect");
+const providerInput = document.getElementById("provider");
+const rucInput = document.getElementById("ruc");
+const generateBtn = document.getElementById("generateBtn");
+const statusBox = document.getElementById("status");
+const infoBox = document.getElementById("info");
+const previewBox = document.getElementById("preview");
 
-function findHeader(rows){
-  const aliases={
-    item:["item","ítem","n item","numero item","número item"],
-    code:["codigo catalogo","código catalogo","codigo de catalogo","código de catálogo","codigo producto","código producto"],
-    desc:["descripcion","descripción","descripcion del producto","descripción del producto","nombre del producto"]
-  };
-  const clean=v=>String(v??"").replace(/\r?\n/g," ").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();
-  const match=(v,a)=>a.some(x=>{x=clean(x); return clean(v)===x||clean(v).includes(x)});
-  for(let i=0;i<Math.min(rows.length,200);i++){
-    let f={item:false,code:false,desc:false};
-    (rows[i]||[]).forEach(v=>{
-      if(match(v,aliases.item))f.item=true;
-      if(match(v,aliases.code))f.code=true;
-      if(match(v,aliases.desc))f.desc=true;
-    });
-    if(f.item&&f.code&&f.desc)return i;
-  }
-  for(let i=0;i<Math.min(rows.length-1,200);i++){
-    const a=(rows[i]||[]),b=(rows[i+1]||[]);
-    let f={item:false,code:false,desc:false};
-    for(let j=0;j<Math.max(a.length,b.length);j++){
-      const v=clean((a[j]||"")+" "+(b[j]||""));
-      if(match(v,aliases.item))f.item=true;
-      if(match(v,aliases.code))f.code=true;
-      if(match(v,aliases.desc))f.desc=true;
+let workbook = null;
+let lots = [];
+
+
+/* =========================================================
+   BOTÓN / ARCHIVO
+========================================================= */
+
+selectBtn.addEventListener("click", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    fileInput.click();
+});
+
+dropZone.addEventListener("click", function(e) {
+
+    if (
+        e.target !== selectBtn &&
+        !e.target.closest(".select-btn")
+    ) {
+        fileInput.click();
     }
-    if(f.item&&f.code&&f.desc)return i+1;
-  }
-  return -1;
-}
 
-function parseNumber(v){
-  if(typeof v==="number") return v;
-  const s=text(v).replace(/\./g,"").replace(",",".");
-  const n=Number(s);
-  return Number.isFinite(n) ? n : null;
-}
+});
 
-function parseLotMarker(v){
-  const s=String(v??"").replace(/\s+/g," ").trim();
-  const m=s.match(/\bLote(?:s)?\s+([IVXLCDM]+|\d+)\b/i);
-  if(!m)return null;
-  const g=s.match(/\bgrupo\s*([0-9]+)/i);
-  const ca=s.match(/Contrato\s+Abierto\s*:\s*([^,|]+)/i);
-  const as=s.match(/Abastecimiento\s+Simult[aá]neo\s*:\s*([^,|]+)/i);
-  return {lote:m[1].toUpperCase(),grupo:g?g[1]:"1",marker:s,contrato:"Si",
-          simultaneo:as?( /^si$/i.test(as[1].trim())?"Si":"No"):"No",tipo:"monto"};
-}
+fileInput.addEventListener("change", function(e) {
 
-function parseAttributes(v){
-  const out=[],s=String(v??"").replace(/\r/g,"");
-  if(!s.trim())return out;
-  s.split(/\n|;(?=\s*[A-Za-zÁÉÍÓÚÑáéíóúñ][^;:]{0,80}:)/).forEach(line=>{
-    line=line.trim(); if(!line)return;
-    const p=line.indexOf(":"),key=(p>=0?line.slice(0,p):line).trim();
-    if(key&&!/^caracter[ií]sticas?$/i.test(key))out.push(key);
-  });
-  return [...new Set(out)];
-}
+    if (
+        e.target.files &&
+        e.target.files.length > 0
+    ) {
+        loadExcel(e.target.files[0]);
+    }
 
-function catalogName(desc){
-  // En el CSV de referencia: Nombre + " - En Catálogo: " + primer
-  // segmento descriptivo.
-  const s=text(desc);
-  const p=s.indexOf(" - ");
-  return p>=0 ? s.slice(0,p).trim() : s;
-}
+});
 
-function detectSheet(name){
-  const rows=sheetsData[name], header=findHeader(rows);
-  const sections=[]; let current=null;
-  const dataRow=r=>{
-    if(!r)return false;
-    const item=String(r[0]??"").trim(),code=String(r[1]??"").trim(),desc=String(r[2]??"").trim();
-    return /^\d+(?:[.,]\d+)?$/.test(item)&&code.length>0&&desc.length>0;
-  };
-  const scan=(from)=>{
-    let cur=null,out=[];
-    for(let i=from;i<rows.length;i++){
-      const r=rows[i]||[];
-      let marker=null;
-      for(const v of r){marker=parseLotMarker(v);if(marker)break}
-      if(marker){
-        if(cur&&cur.items.length)out.push(cur);
-        cur={...marker,start:i,items:[]}; continue;
-      }
-      if(dataRow(r)){
-        if(!cur)cur={lote:"",grupo:"1",marker:"",contrato:"Si",simultaneo:"No",tipo:"monto",start:i,items:[]};
-        let attr=r[5]??"";
-        if(!String(attr).trim()){
-          for(let c=3;c<r.length;c++) if(String(r[c]??"").includes(":")) {attr=r[c];break}
+
+/* =========================================================
+   DRAG & DROP
+========================================================= */
+
+["dragenter", "dragover"].forEach(function(eventName) {
+
+    dropZone.addEventListener(eventName, function(e) {
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        dropZone.classList.add("dragover");
+
+    });
+
+});
+
+["dragleave", "drop"].forEach(function(eventName) {
+
+    dropZone.addEventListener(eventName, function(e) {
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        dropZone.classList.remove("dragover");
+
+    });
+
+});
+
+dropZone.addEventListener("drop", function(e) {
+
+    const file =
+        e.dataTransfer.files &&
+        e.dataTransfer.files[0];
+
+    if (file) {
+        loadExcel(file);
+    }
+
+});
+
+
+lotSelect.addEventListener("change", updateInfo);
+
+generateBtn.addEventListener("click", generateCSV);
+
+
+/* =========================================================
+   CARGAR EXCEL
+========================================================= */
+
+async function loadExcel(file) {
+
+    statusBox.textContent = "";
+    statusBox.className = "status";
+
+    previewBox.style.display = "none";
+
+    if (!file) {
+        showError("No se seleccionó ningún archivo.");
+        return;
+    }
+
+    /*
+     * No dependemos solamente de file.type porque
+     * algunos navegadores devuelven MIME vacío para .xls/.xlsx.
+     */
+    if (!/\.(xlsx|xls)$/i.test(file.name)) {
+
+        showError(
+            "El archivo seleccionado no tiene extensión .xlsx o .xls."
+        );
+
+        return;
+    }
+
+    fileName.textContent = file.name;
+
+    try {
+
+        showOk("Leyendo Excel...");
+
+        const buffer = await file.arrayBuffer();
+
+        workbook = XLSX.read(buffer, {
+            type: "array",
+            cellDates: false,
+            cellNF: false,
+            cellText: false
+        });
+
+        console.log(
+            "Hojas encontradas:",
+            workbook.SheetNames
+        );
+
+        lots = extractLots(workbook);
+
+        console.log(
+            "Lotes encontrados:",
+            lots
+        );
+
+        if (!lots.length) {
+
+            throw new Error(
+                "El Excel fue abierto correctamente, pero no se " +
+                "detectaron lotes con ítems adjudicados."
+            );
         }
-        cur.items.push({item:parseNumber(r[0]),code:String(r[1]).trim(),desc:String(r[2]).trim(),attrs:parseAttributes(attr),row:i});
-      }
+
+        lotSelect.innerHTML = "";
+
+        lots.forEach(function(lot, index) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = String(index);
+
+            option.textContent =
+                "Lote " +
+                lot.number +
+                " — " +
+                (lot.faculty || "Sin descripción") +
+                " (" +
+                lot.items.length +
+                " ítems)";
+
+            lotSelect.appendChild(option);
+
+        });
+
+        lotSelect.disabled = false;
+
+        const first = lots[0];
+
+        if (first.provider) {
+            providerInput.value = first.provider;
+        }
+
+        if (first.ruc) {
+            rucInput.value = first.ruc;
+        }
+
+        generateBtn.disabled = false;
+
+        updateInfo();
+
+        showOk(
+            "Excel cargado correctamente. " +
+            "Se encontraron " +
+            lots.length +
+            " lote(s)."
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        workbook = null;
+        lots = [];
+
+        lotSelect.innerHTML =
+            '<option value="">Cargá primero el Excel</option>';
+
+        lotSelect.disabled = true;
+        generateBtn.disabled = true;
+
+        showError(
+            "No se pudo leer el Excel: " +
+            error.message
+        );
     }
-    if(cur&&cur.items.length)out.push(cur);
-    return out;
-  };
-  let from=header>=0?header+1:0;
-  let result=scan(from);
-  if(!result.length)result=scan(0);
-  return {header,sections:result};
 }
 
-function parseWorkbook(){
-  sheetsData={};
-  detected=[];
-  workbook.SheetNames.forEach(name=>{
-    const ws=workbook.Sheets[name];
-    const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:""});
-    sheetsData[name]=rows;
-    const d=detectSheet(name);
-    if(d.sections.length) detected.push({name,...d});
-  });
-}
 
-function getSupplier(){
-  for(const name of workbook.SheetNames){
-    const rows=sheetsData[name];
-    for(const r of rows){
-      const label=norm(r[1]);
-      if(label==="adjudicado" || label==="proveedor"){
-        const v=text(r[3] ?? r[2] ?? "");
-        if(v) return v.replace(/\s*-\s*$/,"").trim();
-      }
-    }
-  }
-  return "";
-}
+/* =========================================================
+   EXTRAER LOTES
+========================================================= */
 
-function getLicitacion(){
-  for(const name of workbook.SheetNames){
-    for(const r of sheetsData[name]){
-      const s=text(r[0] ?? r[1] ?? "");
-      if(/^licitacion\\s*:/i.test(s)) return s.replace(/^licitacion\\s*:\\s*/i,"").trim();
-    }
-  }
-  return "";
-}
+function extractLots(wb) {
 
-function populateSheets(){
-  $("sheet").innerHTML="";
-  detected.forEach((d,i)=>{
-    const o=document.createElement("option");
-    o.value=d.name;o.textContent=`${d.name} (${d.sections.length} lote(s))`;
-    $("sheet").appendChild(o);
-  });
-  if(detected.length){
-    $("sheet").value=detected[0].name;
-    populateSections();
-  }
-}
+    const result = [];
 
-function populateSections(){
-  const d=detected.find(x=>x.name===$("sheet").value);
-  $("section").innerHTML="";
-  if(!d) return;
-  d.sections.forEach((s,i)=>{
-    const o=document.createElement("option");
-    o.value=i;
-    const label=s.lote ? `Lote ${s.lote}` : `Sección ${i+1}`;
-    o.textContent=`${label} — ${s.items.length} ítem(s)`;
-    $("section").appendChild(o);
-  });
-  updateUI();
-}
+    wb.SheetNames.forEach(function(sheetName) {
 
-function selectedSections(){
-  if($("allSheets").checked){
-    return detected.flatMap(d=>d.sections.map((s,i)=>({sheet:d.name,section:i,data:s})));
-  }
-  const d=detected.find(x=>x.name===$("sheet").value);
-  const i=Number($("section").value);
-  return d && d.sections[i] ? [{sheet:d.name,section:i,data:d.sections[i]}] : [];
-}
+        const normalizedSheet =
+            normalize(sheetName);
 
-function makeRows(){
-  const result=[];
-  selectedSections().forEach(sel=>{
-    const s=sel.data;
-    s.items.forEach(it=>{
-      const base=[
-        s.lote, s.grupo, it.item, it.code,
-        "Mantenimiento de Edificios de las Facultades - UNI 2026",
-        `${it.desc} - En Catálogo: ${catalogName(it.desc)}`,
-        "_NO_APLICA_",
-        "Si",
-        s.simultaneo || "No",
-        s.tipo || "monto",
-        "_NO_APLICA_",
-        "_NO_APLICA_",
-        "",
-        "",
-        ""
-      ];
-      result.push(base);
-      it.attrs.forEach(a=>{
-        const attr=new Array(15).fill("");
-        attr[13]=a;
-        result.push(attr);
-      });
+        /*
+         * La hoja de ítems generales no contiene adjudicación.
+         */
+        if (
+            normalizedSheet.startsWith("items")
+        ) {
+            return;
+        }
+
+        const ws = wb.Sheets[sheetName];
+
+        if (!ws) {
+            return;
+        }
+
+        const rows =
+            XLSX.utils.sheet_to_json(ws, {
+                header: 1,
+                defval: "",
+                raw: true
+            });
+
+        console.log(
+            "Procesando hoja:",
+            sheetName,
+            "Filas:",
+            rows.length
+        );
+
+        let sheetProvider = "";
+        let sheetRuc = "";
+
+        /*
+         * Buscar proveedor/RUC en las primeras filas.
+         */
+        for (
+            let i = 0;
+            i < Math.min(rows.length, 25);
+            i++
+        ) {
+
+            const row = rows[i];
+
+            const rowText =
+                row
+                    .map(function(v) {
+                        return String(v ?? "");
+                    })
+                    .join(" ");
+
+            if (/Adjudicado\s*:/i.test(rowText)) {
+
+                const parsed =
+                    parseProvider(rowText);
+
+                if (parsed.name) {
+                    sheetProvider =
+                        parsed.name;
+                }
+
+                if (parsed.ruc) {
+                    sheetRuc =
+                        parsed.ruc;
+                }
+            }
+
+        }
+
+
+        let currentLot = null;
+        let headerFound = false;
+
+        for (
+            let i = 0;
+            i < rows.length;
+            i++
+        ) {
+
+            const row = rows[i];
+
+            const cells =
+                row.map(function(v) {
+                    return String(v ?? "").trim();
+                });
+
+            const firstCell =
+                cells[0] || "";
+
+            const whole =
+                cells
+                    .filter(Boolean)
+                    .join(" ")
+                    .trim();
+
+
+            /* -------------------------------------------------
+               DETECTAR LOTE
+            ------------------------------------------------- */
+
+            const lotText =
+                findLotText(cells);
+
+            if (lotText) {
+
+                /*
+                 * Guardar el lote anterior.
+                 */
+                if (
+                    currentLot &&
+                    currentLot.items.length
+                ) {
+
+                    result.push(currentLot);
+
+                }
+
+                currentLot =
+                    parseLotHeader(lotText);
+
+                currentLot.sheetName =
+                    sheetName;
+
+                currentLot.provider =
+                    sheetProvider;
+
+                currentLot.ruc =
+                    sheetRuc;
+
+                headerFound = false;
+
+                continue;
+            }
+
+
+            /* -------------------------------------------------
+               DETECTAR ENCABEZADO DE ÍTEMS
+            ------------------------------------------------- */
+
+            const normalizedFirst =
+                normalize(firstCell);
+
+            const normalizedSecond =
+                normalize(cells[1] || "");
+
+            const normalizedWhole =
+                normalize(whole);
+
+            /*
+             * Forma normal:
+             * Item | Codigo Catalogo | ...
+             */
+            if (
+                normalizedFirst === "item" &&
+                normalizedSecond === "codigo catalogo"
+            ) {
+
+                headerFound = true;
+                continue;
+            }
+
+            /*
+             * También aceptamos encabezados aunque
+             * haya columnas vacías/intermedias.
+             */
+            if (
+                normalizedWhole.includes("codigo catalogo") &&
+                normalizedWhole.includes("item")
+            ) {
+
+                headerFound = true;
+                continue;
+            }
+
+
+            /* -------------------------------------------------
+               DETECTAR FILA DE ÍTEM
+            ------------------------------------------------- */
+
+            if (
+                headerFound &&
+                currentLot &&
+                isPositiveInteger(row[0]) &&
+                clean(row[1]) !== ""
+            ) {
+
+                const item = {
+
+                    item:
+                        toText(row[0]),
+
+                    code:
+                        clean(toText(row[1])),
+
+                    description:
+                        clean(toText(row[2])),
+
+                    quantity:
+                        toText(row[4]),
+
+                    characteristics:
+                        clean(toText(row[5])),
+
+                    price:
+                        toText(row[6])
+
+                };
+
+                /*
+                 * Evitar interpretar filas que no sean
+                 * códigos de catálogo.
+                 */
+                if (item.code) {
+
+                    currentLot.items.push(item);
+
+                }
+
+            }
+
+        }
+
+
+        /*
+         * Guardar último lote de la hoja.
+         */
+        if (
+            currentLot &&
+            currentLot.items.length
+        ) {
+
+            result.push(currentLot);
+
+        }
+
     });
-  });
-  return result;
+
+
+    /* =====================================================
+       ELIMINAR DUPLICADOS
+    ===================================================== */
+
+    const unique = [];
+    const seen = new Set();
+
+    result.forEach(function(lot) {
+
+        const key =
+            lot.number +
+            "|" +
+            lot.sheetName;
+
+        if (!seen.has(key)) {
+
+            seen.add(key);
+            unique.push(lot);
+
+        }
+
+    });
+
+    return unique;
 }
 
-function csvCell(v){
-  const s=String(v ?? "");
-  // El formato de referencia utiliza comillas para textos y deja sin
-  // comillas los marcadores especiales/números.
-  if(s==="_NO_APLICA_" || /^-?\\d+(\\.\\d+)?$/.test(s)) return s;
-  return `"${s.replace(/"/g,'""')}"`;
-}
 
-function buildCSV(){
-  const rows=makeRows();
-  const lic=getLicitacion() || "Licitación no detectada";
-  const supplier=text($("supplier").value) || "Proveedor no especificado";
-  const ruc=text($("ruc").value);
-  const supplierLine=`PROVEEDOR: ${supplier}${ruc ? " - RUC: "+ruc : ""}`;
+/* =========================================================
+   ENCONTRAR TEXTO DE LOTE
+========================================================= */
 
-  const out=[];
-  out.push(`"${lic.replace(/"/g,'""')}"`);
-  out.push(`"SISTEMA DE ADJUDICACIÓN: ${text($("system").value) || "lote"}"`);
-  out.push(`"${supplierLine.replace(/"/g,'""')}"`);
-  out.push(`"OBSERVACIÓN: En caso de que una fila no sera cargada eliminar la fila y los atributos de la lista. "`);
-  out.push("");
-  out.push(OUTPUT_HEADERS.map(csvCell).join(";"));
-  rows.forEach(r=>out.push(r.map(csvCell).join(";")));
+function findLotText(cells) {
 
-  // BOM UTF-8 para conservar correctamente caracteres al abrir en Excel.
-  return "\\uFEFF"+out.join("\\r\\n")+"\\r\\n";
-}
+    for (const cell of cells) {
 
-function updateUI(){
-  const sections=selectedSections();
-  const count=makeRows().length;
-  $("download").disabled=!sections.length;
-  $("previewBtn").disabled=!sections.length;
-  $("status").className="status "+(sections.length?"ok":"error");
-  $("status").textContent=sections.length
-    ? `${sections.length} sección(es) seleccionada(s), ${count} fila(s) de salida.`
-    : "No se detectaron datos compatibles en la selección.";
-  renderPreview();
-}
+        const text =
+            clean(cell);
 
-function renderPreview(){
-  const rows=makeRows();
-  if(!rows.length){
-    $("preview").innerHTML='<div style="padding:18px;color:#68737d">No hay datos para mostrar.</div>';
-    return;
-  }
-  const sample=[OUTPUT_HEADERS,...rows.slice(0,15)];
-  let html="<table><thead><tr>";
-  html+=sample[0].map(h=>`<th>${escapeHtml(h)}</th>`).join("");
-  html+="</tr></thead><tbody>";
-  sample.slice(1).forEach(r=>{
-    html+="<tr>"+r.map(v=>`<td>${escapeHtml(v)}</td>`).join("")+"</tr>";
-  });
-  html+="</tbody></table>";
-  $("preview").innerHTML=html;
-}
+        if (!text) {
+            continue;
+        }
 
-function escapeHtml(s){
-  return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-}
+        /*
+         * Ejemplos aceptados:
+         *
+         * Lote I - FACULTAD ... - Grupo 1
+         * Lote II - FACULTAD ... - Grupo 1
+         * Lote III - FACULTAD ... - Grupo 1
+         */
 
-$("xlsx").addEventListener("change",async e=>{
-  const file=e.target.files[0];
-  if(!file) return;
-  try{
-    const buf=await file.arrayBuffer();
-    workbook=XLSX.read(buf,{type:"array",cellDates:false,cellNF:true,cellStyles:true});
-    parseWorkbook();
+        if (
+            /^Lote\s+(I|II|III)\b/i.test(text)
+        ) {
 
-    $("sheetArea").classList.remove("hidden");
-    $("supplier").value=getSupplier();
-    $("fileName").value=file.name.replace(/\.(xlsx|xls)$/i,"")+".csv";
+            return text;
 
-    populateSheets();
+        }
 
-    if(!detected.length){
-      $("status").className="status error";
-      $("status").textContent="No se encontró una tabla compatible. El sistema busca automáticamente columnas como Ítem, Código Catálogo y Descripción.";
-      $("download").disabled=true;
     }
-  }catch(err){
-    $("sheetArea").classList.remove("hidden");
-    $("status").className="status error";
-    $("status").textContent="No se pudo leer el Excel: "+err.message;
-  }
-});
 
-$("sheet").addEventListener("change",populateSections);
-$("section").addEventListener("change",updateUI);
-$("allSheets").addEventListener("change",()=>{
-  $("sheet").disabled=$("allSheets").checked;
-  $("section").disabled=$("allSheets").checked;
-  updateUI();
-});
-$("previewBtn").addEventListener("click",renderPreview);
+    /*
+     * Segundo intento sobre toda la fila.
+     */
+    const joined =
+        cells
+            .filter(Boolean)
+            .join(" ");
 
-$("download").addEventListener("click",()=>{
-  const csv=buildCSV();
-  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  let name=text($("fileName").value)||"salida.csv";
-  if(!/\.csv$/i.test(name)) name+=".csv";
-  a.download=name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-});
+    const match =
+        joined.match(
+            /Lote\s+(I|II|III)\b.*?(?:Grupo\s+\d+)?/i
+        );
+
+    if (match) {
+        return match[0];
+    }
+
+    return "";
+}
+
+
+/* =========================================================
+   PARSEAR CABECERA DEL LOTE
+========================================================= */
+
+function parseLotHeader(text) {
+
+    const value =
+        clean(text);
+
+    let number = "";
+    let faculty = "";
+    let group = "1";
+
+    /*
+     * Obtener número romano.
+     */
+    const lotMatch =
+        value.match(
+            /Lote\s+(I|II|III)\b/i
+        );
+
+    if (lotMatch) {
+
+        number =
+            romanToNumber(
+                lotMatch[1]
+            );
+
+    }
+
+
+    /*
+     * Obtener grupo.
+     */
+    const groupMatch =
+        value.match(
+            /Grupo\s+(\d+)/i
+        );
+
+    if (groupMatch) {
+
+        group =
+            groupMatch[1];
+
+    }
+
+
+    /*
+     * Obtener descripción/facultad.
+     */
+    faculty =
+        value
+            .replace(
+                /^Lote\s+(I|II|III)\s*-\s*/i,
+                ""
+            )
+            .replace(
+                /\s*-\s*Grupo\s+\d+.*$/i,
+                ""
+            )
+            .trim();
+
+    const contract =
+        parseContract(value);
+
+    return {
+
+        number,
+
+        group,
+
+        faculty,
+
+        contractOpen:
+            contract.contractOpen,
+
+        simultaneous:
+            contract.simultaneous,
+
+        sheetName: "",
+
+        provider: "",
+
+        ruc: "",
+
+        items: []
+
+    };
+}
+
+
+/* =========================================================
+   CONTRATO
+========================================================= */
+
+function parseContract(text) {
+
+    const result = {
+
+        contractOpen: "Si",
+
+        simultaneous: "No"
+
+    };
+
+    const sim =
+        text.match(
+            /Abastecimiento\s+Simultaneo\s*:\s*([^,]+)/i
+        );
+
+    if (sim) {
+
+        result.simultaneous =
+            /^s[ií]$/i.test(
+                sim[1].trim()
+            )
+                ? "Si"
+                : "No";
+
+    }
+
+    return result;
+}
+
+
+/* =========================================================
+   CONSTRUIR FILAS CSV
+========================================================= */
+
+function buildRows(lot) {
+
+    const rows = [];
+
+    lot.items.forEach(function(item) {
+
+        const catalog =
+            catalogName(item.code);
+
+        const productName =
+            item.description +
+            " - En Catálogo: " +
+            catalog;
+
+
+        /*
+         * FILA PRINCIPAL
+         */
+        rows.push([
+
+            lot.number,
+
+            lot.group,
+
+            item.item,
+
+            item.code,
+
+            "Mantenimiento de Edificios de las Facultades - UNI 2026",
+
+            productName,
+
+            "_NO_APLICA_",
+
+            "Si",
+
+            lot.simultaneous || "No",
+
+            "monto",
+
+            "_NO_APLICA_",
+
+            "_NO_APLICA_",
+
+            "",
+
+            "",
+
+            ""
+
+        ]);
+
+
+        /*
+         * ATRIBUTO 1
+         */
+        rows.push([
+
+            "", "", "", "", "", "", "", "",
+            "", "", "", "", "",
+
+            "procedencia",
+
+            ""
+
+        ]);
+
+
+        /*
+         * ATRIBUTO 2
+         */
+        rows.push([
+
+            "", "", "", "", "", "", "", "",
+            "", "", "", "", "",
+
+            "nro_certificado_origen_nacional",
+
+            ""
+
+        ]);
+
+    });
+
+    return rows;
+}
+
+
+/* =========================================================
+   GENERAR CSV
+========================================================= */
+
+function generateCSV() {
+
+    if (!lots.length) {
+
+        showError(
+            "Primero cargá el archivo Excel."
+        );
+
+        return;
+    }
+
+    const index =
+        Number(lotSelect.value);
+
+    const lot =
+        lots[index];
+
+    if (!lot) {
+
+        showError(
+            "Seleccioná un lote."
+        );
+
+        return;
+    }
+
+    let provider =
+        clean(providerInput.value);
+
+    let ruc =
+        clean(rucInput.value);
+
+    if (!provider) {
+        provider =
+            lot.provider || "";
+    }
+
+    if (!ruc) {
+        ruc =
+            lot.ruc || "";
+    }
+
+    if (!provider) {
+
+        showError(
+            "Ingresá el nombre del proveedor."
+        );
+
+        return;
+    }
+
+    if (!ruc) {
+
+        showError(
+            "Ingresá el RUC del proveedor."
+        );
+
+        return;
+    }
+
+
+    const license =
+        "LICITACIÓN: 484012 - Mantenimiento de Edificios de las Facultades - UNI 2026";
+
+    const system =
+        "SISTEMA DE ADJUDICACIÓN:  lote";
+
+    const providerLine =
+        "PROVEEDOR: " +
+        provider +
+        " - RUC: " +
+        ruc;
+
+    const observation =
+        "OBSERVACIÓN: En caso de que una fila no sera cargada eliminar la fila y los atributos de la lista. ";
+
+
+    const rows =
+        buildRows(lot);
+
+    const lines = [];
+
+
+    lines.push(
+        csvMeta(license)
+    );
+
+    lines.push(
+        csvMeta(system)
+    );
+
+    lines.push(
+        csvMeta(providerLine)
+    );
+
+    lines.push(
+        csvMeta(observation)
+    );
+
+    lines.push("");
+
+
+    lines.push(
+        HEADERS
+            .map(function(value, index) {
+                return csvField(
+                    value,
+                    index
+                );
+            })
+            .join(";")
+    );
+
+
+    rows.forEach(function(row) {
+
+        lines.push(
+
+            row
+                .map(function(value, index) {
+
+                    return csvField(
+                        value,
+                        index
+                    );
+
+                })
+                .join(";")
+
+        );
+
+    });
+
+
+    const csvText =
+        "\uFEFF" +
+        lines.join("\r\n") +
+        "\r\n";
+
+
+    const blob =
+        new Blob(
+            [csvText],
+            {
+                type:
+                    "text/csv;charset=utf-8;"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+    const a =
+        document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+        "484012-Mantenimiento-de-Edificios-de-las-Facultades-UNI-2026-Lote-" +
+        lot.number +
+        ".csv";
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+    setTimeout(
+        function() {
+            URL.revokeObjectURL(url);
+        },
+        1000
+    );
+
+
+    showOk(
+        "CSV generado correctamente: " +
+        lot.items.length +
+        " ítems / " +
+        (lot.items.length * 3) +
+        " filas de datos."
+    );
+
+    renderPreview(lot);
+}
+
+
+/* =========================================================
+   CSV
+========================================================= */
+
+function csvMeta(value) {
+
+    return '"' +
+        String(value)
+            .replace(/"/g, '""') +
+        '"';
+
+}
+
+
+function csvField(value, index) {
+
+    let v =
+        value === null ||
+        value === undefined
+            ? ""
+            : String(value);
+
+
+    const noQuoteColumns =
+        new Set([
+            0,
+            1,
+            2,
+            6,
+            10,
+            11,
+            12
+        ]);
+
+
+    if (
+        noQuoteColumns.has(index)
+    ) {
+
+        return v.replace(
+            /\r?\n/g,
+            " "
+        );
+
+    }
+
+
+    if (v === "") {
+        return "";
+    }
+
+
+    return '"' +
+        v
+            .replace(/"/g, '""')
+            .replace(/\r?\n/g, " ") +
+        '"';
+}
+
+
+/* =========================================================
+   CATÁLOGO
+========================================================= */
+
+function catalogName(code) {
+
+    const cleanCode =
+        clean(code);
+
+    if (
+        CATALOG_BY_CODE[
+            cleanCode
+        ]
+    ) {
+
+        return CATALOG_BY_CODE[
+            cleanCode
+        ];
+
+    }
+
+    return "";
+}
+
+
+/* =========================================================
+   PREVISUALIZACIÓN
+========================================================= */
+
+function renderPreview(lot) {
+
+    const rows =
+        buildRows(lot);
+
+    const previewRows =
+        rows.slice(
+            0,
+            Math.min(
+                rows.length,
+                15
+            )
+        );
+
+
+    let html =
+        "<table><thead><tr>";
+
+
+    HEADERS.forEach(function(h) {
+
+        html +=
+            "<th>" +
+            escapeHtml(h) +
+            "</th>";
+
+    });
+
+
+    html +=
+        "</tr></thead><tbody>";
+
+
+    previewRows.forEach(function(row) {
+
+        html += "<tr>";
+
+        row.forEach(function(cell) {
+
+            html +=
+                "<td>" +
+                escapeHtml(cell) +
+                "</td>";
+
+        });
+
+        html += "</tr>";
+
+    });
+
+
+    html +=
+        "</tbody></table>";
+
+
+    previewBox.innerHTML =
+        html;
+
+    previewBox.style.display =
+        "block";
+}
+
+
+/* =========================================================
+   INFORMACIÓN
+========================================================= */
+
+function updateInfo() {
+
+    if (!lots.length) {
+        return;
+    }
+
+    const lot =
+        lots[
+            Number(
+                lotSelect.value
+            )
+        ];
+
+    if (!lot) {
+        return;
+    }
+
+
+    if (lot.provider) {
+        providerInput.value =
+            lot.provider;
+    }
+
+    if (lot.ruc) {
+        rucInput.value =
+            lot.ruc;
+    }
+
+
+    infoBox.textContent =
+
+        "Lote: " +
+        lot.number +
+
+        "\nFacultad: " +
+        lot.faculty +
+
+        "\nGrupo: " +
+        lot.group +
+
+        "\nÍtems detectados: " +
+        lot.items.length +
+
+        "\nContrato Abierto: Si" +
+
+        "\nAbastecimiento Simultáneo: " +
+        (lot.simultaneous || "No") +
+
+        "\nSalida: " +
+        (lot.items.length * 3) +
+        " filas de datos.";
+}
+
+
+/* =========================================================
+   PROVEEDOR
+========================================================= */
+
+function parseProvider(text) {
+
+    let value =
+        clean(text);
+
+    let ruc = "";
+
+
+    const rucMatch =
+        value.match(
+            /RUC\s*[:\-]?\s*([0-9.\-]+)/i
+        );
+
+
+    if (rucMatch) {
+
+        ruc =
+            rucMatch[1]
+                .replace(/\D/g, "");
+
+
+        value =
+            value.replace(
+                /\s*[-–—]?\s*RUC\s*[:\-]?\s*[0-9.\-]+/i,
+                ""
+            );
+
+    }
+
+
+    value =
+        value
+            .replace(
+                /[-–—]\s*$/,
+                ""
+            )
+            .trim();
+
+
+    return {
+
+        name: value,
+
+        ruc: ruc
+
+    };
+}
+
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+
+function isPositiveInteger(value) {
+
+    if (
+        typeof value === "number"
+    ) {
+
+        return (
+            Number.isInteger(value) &&
+            value > 0
+        );
+
+    }
+
+    return /^\d+$/.test(
+        String(
+            value ?? ""
+        ).trim()
+    );
+}
+
+
+function toText(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+
+    if (
+        typeof value === "number" &&
+        Number.isInteger(value)
+    ) {
+
+        return String(value);
+
+    }
+
+
+    return String(value);
+}
+
+
+function clean(value) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /\uFEFF/g,
+            ""
+        )
+        .replace(
+            /\r/g,
+            ""
+        )
+        .trim();
+}
+
+
+function normalize(value) {
+
+    return clean(value)
+
+        .toLowerCase()
+
+        .normalize("NFD")
+
+        .replace(
+            /[\u0300-\u036f]/g,
+            ""
+        )
+
+        .replace(
+            /\s+/g,
+            " "
+        );
+}
+
+
+function romanToNumber(value) {
+
+    const v =
+        String(value)
+            .toUpperCase();
+
+    if (v === "I") {
+        return "1";
+    }
+
+    if (v === "II") {
+        return "2";
+    }
+
+    if (v === "III") {
+        return "3";
+    }
+
+    return v;
+}
+
+
+/* =========================================================
+   MENSAJES
+========================================================= */
+
+function showOk(message) {
+
+    statusBox.textContent =
+        message;
+
+    statusBox.className =
+        "status ok";
+}
+
+
+function showError(message) {
+
+    statusBox.textContent =
+        message;
+
+    statusBox.className =
+        "status error";
+}
+
+
+function escapeHtml(value) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
 </script>
+
 </body>
 </html>
