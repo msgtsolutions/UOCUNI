@@ -52,33 +52,63 @@
         line-height: 1.5;
     }
 
-    .drop {
+    .upload-box {
         border: 2px dashed #475569;
         border-radius: 14px;
-        padding: 32px 20px;
+        padding: 30px 20px;
         text-align: center;
-        cursor: pointer;
         transition: .2s;
         background: #0b1220;
     }
 
-    .drop:hover, .drop.dragover {
+    .upload-box:hover, .upload-box.dragover {
         border-color: #60a5fa;
         background: #111c30;
     }
 
-    .drop strong {
-        display: block;
-        font-size: 18px;
+    .upload-icon {
+        font-size: 38px;
         margin-bottom: 8px;
     }
 
-    .drop span {
+    .upload-box strong {
+        display: block;
+        font-size: 18px;
+        margin-bottom: 7px;
+    }
+
+    .upload-box span {
+        display: block;
         color: #9ca3af;
         font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    .upload-box small {
+        display: block;
+        color: #64748b;
+        margin-top: 10px;
+        font-size: 12px;
     }
 
     input[type=file] { display: none; }
+
+    .select-btn {
+        width: auto;
+        margin: 0;
+        padding: 11px 18px;
+        background: #2563eb;
+        color: white;
+        border: 0;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .select-btn:hover {
+        background: #1d4ed8;
+    }
 
     .grid {
         display: grid;
@@ -209,11 +239,14 @@
             respetando la estructura del archivo de referencia.
         </p>
 
-        <label class="drop" id="dropZone" for="excelFile">
-            <strong>Seleccionar archivo Excel</strong>
-            <span id="fileName">También podés arrastrar y soltar el .xlsx aquí</span>
-        </label>
-        <input id="excelFile" type="file" accept=".xlsx,.xls">
+        <div class="upload-box" id="dropZone">
+            <div class="upload-icon">📄</div>
+            <strong>Archivo Excel</strong>
+            <span id="fileName">Ningún archivo seleccionado</span>
+            <button type="button" class="select-btn" id="selectBtn">SELECCIONAR EXCEL</button>
+            <small>Formatos permitidos: .xlsx y .xls</small>
+        </div>
+        <input id="excelFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
 
         <div class="grid">
             <div class="field">
@@ -318,6 +351,7 @@ const CATALOG_BY_CODE = {
 
 const fileInput = document.getElementById("excelFile");
 const dropZone = document.getElementById("dropZone");
+const selectBtn = document.getElementById("selectBtn");
 const fileName = document.getElementById("fileName");
 const lotSelect = document.getElementById("lotSelect");
 const providerInput = document.getElementById("provider");
@@ -329,6 +363,17 @@ const previewBox = document.getElementById("preview");
 
 let workbook = null;
 let lots = [];
+
+selectBtn.addEventListener("click", function(e) {
+    e.stopPropagation();
+    fileInput.click();
+});
+
+dropZone.addEventListener("click", function(e) {
+    if (e.target !== selectBtn) {
+        fileInput.click();
+    }
+});
 
 fileInput.addEventListener("change", function(e) {
     if (e.target.files && e.target.files[0]) {
@@ -365,7 +410,7 @@ async function loadExcel(file) {
     statusBox.className = "status";
     previewBox.style.display = "none";
 
-    if (!/\\.(xlsx|xls)$/i.test(file.name)) {
+    if (!/\.(xlsx|xls)$/i.test(file.name)) {
         showError("El archivo debe ser .xlsx o .xls.");
         return;
     }
