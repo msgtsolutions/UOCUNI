@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Generador CSV</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -28,7 +27,7 @@ body {
 }
 
 .card {
-    background: #ffffff;
+    background: #fff;
     border-radius: 14px;
     padding: 30px;
     box-shadow: 0 5px 25px rgba(0,0,0,.08);
@@ -42,7 +41,6 @@ h1 {
 .subtitle {
     color: #6b7280;
     margin-bottom: 25px;
-    line-height: 1.5;
 }
 
 .upload-box {
@@ -53,7 +51,6 @@ h1 {
     text-align: center;
     cursor: pointer;
     background: #f9fafb;
-    transition: .2s;
 }
 
 .upload-box:hover,
@@ -101,13 +98,7 @@ select {
     border: 1px solid #d1d5db;
     border-radius: 8px;
     font-size: 15px;
-    background: #ffffff;
-}
-
-input:focus,
-select:focus {
-    outline: none;
-    border-color: #2563eb;
+    background: #fff;
 }
 
 button {
@@ -185,11 +176,10 @@ button:disabled {
     overflow: auto;
     max-height: 400px;
     font-size: 12px;
-    white-space: pre;
 }
 
 .debug {
-    margin-top: 20px;
+    margin-top: 25px;
     display: none;
 }
 
@@ -286,17 +276,20 @@ Proveedor
 
 <div class="info-box">
 
-<strong>Archivo universal:</strong><br>
+<strong>Información:</strong><br>
 
-El programa no depende del nombre del archivo.
-Puede cargar diferentes archivos Excel siempre que
-contengan hojas o información correspondiente a
-Lote I, Lote II, Lote III o Lotes II y III.
+El generador analiza automáticamente las hojas del Excel.
+No importa el nombre del archivo.
 
-<br><br>
+Puede trabajar con hojas como:
 
-También detecta los encabezados de los artículos
-automáticamente.
+<strong>Lote I</strong>,
+<strong>Lote II</strong>,
+<strong>Lote III</strong>,
+<strong>Lotes II y III</strong>,
+<strong>Lotes III</strong>,
+
+y variantes similares.
 
 </div>
 
@@ -331,7 +324,7 @@ Vista previa
 >
 
 <h2>
-Información del Excel
+Diagnóstico del Excel
 </h2>
 
 <pre id="debugContent"></pre>
@@ -392,39 +385,25 @@ let allItems = [];
 
 
 /* =========================================================
-   ENCABEZADOS CSV
+   CSV
 ========================================================= */
 
 const CSV_HEADERS = [
 
     "Número Lote",
-
     "Número Grupo",
-
     "Número Item",
-
     "Código de Producto",
-
     "Grupo Descripción",
-
     "Nombre del Producto",
-
     "Cantidad",
-
     "Contrato Abierto",
-
     "Abastecimiento Simultáneo",
-
     "Tipo Contrato Abierto",
-
     "Cantidad Adjudicada",
-
     "Porcentaje de Distribución",
-
     "Precio Unitario Adjudicado",
-
     "Atributo",
-
     "Descripción Atributo"
 
 ];
@@ -436,11 +415,9 @@ const CSV_HEADERS = [
 
 const CATALOG = {
 
-    "72101601-001":
-        "Reparacion de techo",
+    "72101601-001": "Reparacion de techo",
 
-    "72101607-002":
-        "Revestimiento de pared o muros",
+    "72101607-002": "Revestimiento de pared o muros",
 
     "72102201-002":
         "Mantenimiento y reparacion de instalaciones electricas",
@@ -485,7 +462,7 @@ const CATALOG = {
 
 
 /* =========================================================
-   NORMALIZACIÓN
+   TEXTO
 ========================================================= */
 
 function cleanText(value) {
@@ -511,7 +488,7 @@ function normalizeText(value) {
 
 
 /* =========================================================
-   CSV
+   CSV ESCAPE
 ========================================================= */
 
 function csvEscape(value) {
@@ -525,14 +502,10 @@ function csvEscape(value) {
 
     }
 
-    let text = String(value);
-
-    text = text.replace(
-        /"/g,
-        '""'
-    );
-
-    return `"${text}"`;
+    return '"' +
+        String(value)
+            .replace(/"/g, '""') +
+        '"';
 
 }
 
@@ -556,12 +529,7 @@ function cleanProvider(value) {
         cleanText(value);
 
     /*
-      Elimina:
-
-      Adjudicado:
-
-      de cualquier parte inicial
-      del texto.
+      Elimina "Adjudicado:"
     */
 
     text = text.replace(
@@ -570,16 +538,19 @@ function cleanProvider(value) {
     );
 
     /*
-      También soporta textos como:
-
-      PROVEEDOR: Adjudicado: EMPRESA
-
+      Si aparece "PROVEEDOR:"
+      también lo elimina.
     */
 
     text = text.replace(
-        /^proveedor\s*:\s*/i,
+        /^\s*proveedor\s*:\s*/i,
         ""
     );
+
+    /*
+      Segunda limpieza por si quedan
+      ambas etiquetas juntas.
+    */
 
     text = text.replace(
         /^\s*adjudicado\s*:\s*/i,
@@ -595,10 +566,10 @@ function cleanProvider(value) {
    RUC
 ========================================================= */
 
-function extractRucFromText(text) {
+function extractRuc(text) {
 
     const match =
-        String(text).match(
+        String(text || "").match(
             /r\.?\s*u\.?\s*c\.?\s*[:\-]?\s*([0-9]+(?:-[0-9kK])?)/i
         );
 
@@ -614,146 +585,115 @@ function extractRucFromText(text) {
 
 
 /* =========================================================
-   DETECTAR NÚMERO DE LOTE
+   LOTES
 ========================================================= */
 
-function romanToNumber(roman) {
+function detectLotsFromSheetName(
+    sheetName
+) {
 
-    const value =
-        String(roman)
-            .toUpperCase()
-            .trim();
-
-    if (value === "I") {
-        return 1;
-    }
-
-    if (value === "II") {
-        return 2;
-    }
-
-    if (value === "III") {
-        return 3;
-    }
-
-    return null;
-
-}
-
-
-function getLotNumber(text) {
-
-    const value =
-        String(text || "");
-
-    /*
-      IMPORTANTE:
-
-      Primero buscamos III,
-      después II,
-      después I.
-
-      Esto evita problemas con coincidencias parciales.
-    */
-
-    let match =
-        value.match(
-            /\blote\s+III\b/i
-        );
-
-    if (match) {
-        return 3;
-    }
-
-    match =
-        value.match(
-            /\blote\s+II\b/i
-        );
-
-    if (match) {
-        return 2;
-    }
-
-    match =
-        value.match(
-            /\blote\s+I\b/i
-        );
-
-    if (match) {
-        return 1;
-    }
-
-    return null;
-
-}
-
-
-/* =========================================================
-   DETECTAR LOTES DE UNA HOJA
-========================================================= */
-
-function getLotsFromSheetName(sheetName) {
-
-    const normalized =
+    const text =
         normalizeText(sheetName);
 
-    const found = [];
+    const result = [];
 
     /*
-      Ejemplo:
-
-      Lote I
-    */
-
-    if (
-        /\blote\s+i\b/.test(normalized)
-    ) {
-
-        found.push(1);
-
-    }
-
-    /*
-      Ejemplo:
-
-      Lote II
-      Lotes II y III
-    */
-
-    if (
-        /\blotes?\s+ii\b/.test(normalized) ||
-        /\blote\s+ii\b/.test(normalized)
-    ) {
-
-        found.push(2);
-
-    }
-
-    /*
-      Ejemplo:
-
       Lote III
-      Lotes II y III
     */
 
     if (
-        /\blotes?\s+iii\b/.test(normalized) ||
-        /\blote\s+iii\b/.test(normalized)
+        /\blotes?\s+iii\b/.test(text)
     ) {
 
-        found.push(3);
+        result.push(3);
+
+    }
+
+    /*
+      Lote II
+    */
+
+    if (
+        /\blotes?\s+ii\b/.test(text)
+    ) {
+
+        result.push(2);
+
+    }
+
+    /*
+      Lote I
+
+      OJO:
+      Se revisa después de II y III
+      para evitar confusiones.
+    */
+
+    if (
+        /\blotes?\s+i\b/.test(text)
+    ) {
+
+        result.push(1);
 
     }
 
     return [
-        ...new Set(found)
+        ...new Set(result)
     ];
 
 }
 
 
+function detectLotFromText(
+    text
+) {
+
+    const value =
+        normalizeText(text);
+
+    /*
+      III primero.
+    */
+
+    if (
+        /\blote\s+iii\b/.test(value)
+    ) {
+
+        return 3;
+
+    }
+
+    /*
+      II
+    */
+
+    if (
+        /\blote\s+ii\b/.test(value)
+    ) {
+
+        return 2;
+
+    }
+
+    /*
+      I
+    */
+
+    if (
+        /\blote\s+i\b/.test(value)
+    ) {
+
+        return 1;
+
+    }
+
+    return null;
+
+}
+
+
 /* =========================================================
-   DETECTAR LOTE EN UNA FILA
+   DETECTAR LOTE EN FILA
 ========================================================= */
 
 function detectLotInRow(row) {
@@ -762,46 +702,23 @@ function detectLotInRow(row) {
         const cell of row
     ) {
 
-        const text =
+        const value =
             cleanText(cell);
 
-        if (!text) {
+        if (!value) {
             continue;
         }
 
-        /*
-          Buscar primero III.
-        */
+        const lot =
+            detectLotFromText(
+                value
+            );
 
         if (
-            /\blote\s+III\b/i.test(text)
+            lot !== null
         ) {
 
-            return 3;
-
-        }
-
-        /*
-          Luego II.
-        */
-
-        if (
-            /\blote\s+II\b/i.test(text)
-        ) {
-
-            return 2;
-
-        }
-
-        /*
-          Luego I.
-        */
-
-        if (
-            /\blote\s+I\b/i.test(text)
-        ) {
-
-            return 1;
+            return lot;
 
         }
 
@@ -844,12 +761,12 @@ function detectGroup(row) {
 
 
 /* =========================================================
-   DETECTAR ENCABEZADOS
+   DETECTAR ENCABEZADO
 ========================================================= */
 
-function detectHeaderColumns(row) {
+function detectHeader(row) {
 
-    const result = {
+    const header = {
 
         item: -1,
 
@@ -878,35 +795,38 @@ function detectHeaderColumns(row) {
             */
 
             if (
-                result.item === -1 &&
+                header.item === -1 &&
                 (
                     text === "item" ||
-                    text === "n item" ||
-                    text === "nro item" ||
-                    text.includes("numero item")
+                    text === "ítem" ||
+                    text.includes("numero item") ||
+                    text.includes("nro item") ||
+                    text.includes("n° item")
                 )
             ) {
 
-                result.item = index;
+                header.item = index;
 
             }
 
 
             /*
-              CÓDIGO CATÁLOGO
+              CÓDIGO
             */
 
             if (
-                result.code === -1 &&
+                header.code === -1 &&
                 (
                     text.includes("codigo catalogo") ||
                     text.includes("codigo de catalogo") ||
                     text.includes("codigo producto") ||
-                    text === "codigo"
+                    text.includes("codigo del producto") ||
+                    text === "codigo" ||
+                    text === "código"
                 )
             ) {
 
-                result.code = index;
+                header.code = index;
 
             }
 
@@ -916,16 +836,18 @@ function detectHeaderColumns(row) {
             */
 
             if (
-                result.description === -1 &&
+                header.description === -1 &&
                 (
                     text === "descripcion" ||
+                    text === "descripción" ||
                     text.includes("descripcion del producto") ||
-                    text.includes("descripcion producto") ||
+                    text.includes("descripción del producto") ||
+                    text.includes("nombre del producto") ||
                     text.includes("denominacion")
                 )
             ) {
 
-                result.description = index;
+                header.description = index;
 
             }
 
@@ -935,14 +857,15 @@ function detectHeaderColumns(row) {
             */
 
             if (
-                result.quantity === -1 &&
+                header.quantity === -1 &&
                 (
                     text === "cantidad" ||
-                    text.includes("cantidad solicitada")
+                    text.includes("cantidad solicitada") ||
+                    text.includes("cantidad ofertada")
                 )
             ) {
 
-                result.quantity = index;
+                header.quantity = index;
 
             }
 
@@ -952,28 +875,30 @@ function detectHeaderColumns(row) {
             */
 
             if (
-                result.adjudicated === -1 &&
-                text.includes("cantidad adjudicada")
+                header.adjudicated === -1 &&
+                text.includes(
+                    "cantidad adjudicada"
+                )
             ) {
 
-                result.adjudicated = index;
+                header.adjudicated = index;
 
             }
 
 
             /*
-              PRECIO UNITARIO
+              PRECIO
             */
 
             if (
-                result.price === -1 &&
+                header.price === -1 &&
                 (
                     text.includes("precio unitario") ||
                     text.includes("precio adjudicado")
                 )
             ) {
 
-                result.price = index;
+                header.price = index;
 
             }
 
@@ -982,17 +907,68 @@ function detectHeaderColumns(row) {
 
 
     /*
-      Para considerar que encontramos
-      un encabezado de items necesitamos
-      como mínimo Item + Código.
+      Ya NO exigimos obligatoriamente
+      "Código Catálogo".
+
+      Con que haya Item y alguna
+      columna razonable de código,
+      continuamos.
     */
 
     if (
-        result.item !== -1 &&
-        result.code !== -1
+        header.item !== -1 &&
+        header.code !== -1
     ) {
 
-        return result;
+        return header;
+
+    }
+
+
+    /*
+      Segunda estrategia:
+
+      Si encontramos Item pero no
+      encontramos el encabezado de código,
+      buscamos un encabezado que parezca
+      código.
+    */
+
+    if (
+        header.item !== -1
+    ) {
+
+        row.forEach(
+            (cell, index) => {
+
+                const text =
+                    normalizeText(cell);
+
+                if (
+                    header.code === -1 &&
+                    (
+                        text.includes("catalog") ||
+                        text.includes("codigo") ||
+                        text.includes("código")
+                    )
+                ) {
+
+                    header.code = index;
+
+                }
+
+            }
+        );
+
+    }
+
+
+    if (
+        header.item !== -1 &&
+        header.code !== -1
+    ) {
+
+        return header;
 
     }
 
@@ -1003,16 +979,18 @@ function detectHeaderColumns(row) {
 
 
 /* =========================================================
-   ENCONTRAR PROVEEDOR
+   PROVEEDOR
 ========================================================= */
 
-function extractProvider(rows) {
+function extractProvider(
+    rows
+) {
 
     for (
         let i = 0;
         i < Math.min(
             rows.length,
-            40
+            50
         );
         i++
     ) {
@@ -1032,21 +1010,32 @@ function extractProvider(rows) {
             }
 
             if (
-                /adjudicado\s*:/i.test(text)
+                /adjudicado\s*:/i.test(
+                    text
+                )
             ) {
 
-                let provider =
-                    text.replace(
-                        /^.*?adjudicado\s*:\s*/i,
-                        ""
+                const parts =
+                    text.split(
+                        /adjudicado\s*:/i
                     );
 
-                provider =
-                    cleanProvider(provider);
+                if (
+                    parts.length > 1
+                ) {
 
-                if (provider) {
+                    const provider =
+                        cleanProvider(
+                            parts[
+                                parts.length - 1
+                            ]
+                        );
 
-                    return provider;
+                    if (provider) {
+
+                        return provider;
+
+                    }
 
                 }
 
@@ -1062,231 +1051,27 @@ function extractProvider(rows) {
 
 
 /* =========================================================
-   ENCONTRAR RUC
+   EXTRAER ITEMS
 ========================================================= */
 
-function extractRuc(rows) {
-
-    for (
-        let i = 0;
-        i < Math.min(
-            rows.length,
-            40
-        );
-        i++
-    ) {
-
-        const row =
-            rows[i];
-
-        const joined =
-            row
-                .map(cleanText)
-                .filter(Boolean)
-                .join(" ");
-
-        const ruc =
-            extractRucFromText(
-                joined
-            );
-
-        if (ruc) {
-
-            return ruc;
-
-        }
-
-    }
-
-    return "";
-
-}
-
-
-/* =========================================================
-   OBTENER VALOR SEGURO
-========================================================= */
-
-function getCell(row, index) {
-
-    if (
-        index === undefined ||
-        index === null ||
-        index < 0
-    ) {
-
-        return "";
-
-    }
-
-    return cleanText(
-        row[index]
-    );
-
-}
-
-
-/* =========================================================
-   ENCONTRAR DESCRIPCIÓN
-========================================================= */
-
-function findDescription(
-    row,
-    header,
-    codeIndex
-) {
-
-    /*
-      Si encontramos encabezado explícito
-      de descripción, usamos esa columna.
-    */
-
-    if (
-        header.description !== -1
-    ) {
-
-        return getCell(
-            row,
-            header.description
-        );
-
-    }
-
-
-    /*
-      Si no existe encabezado de descripción,
-      buscamos las columnas siguientes al código.
-    */
-
-    for (
-        let i = codeIndex + 1;
-        i < row.length;
-        i++
-    ) {
-
-        const value =
-            getCell(row, i);
-
-        if (!value) {
-            continue;
-        }
-
-        /*
-          Evitar utilizar números como descripción.
-        */
-
-        if (
-            /^\d+(?:[.,]\d+)?$/.test(
-                value
-            )
-        ) {
-
-            continue;
-
-        }
-
-        /*
-          Evitar campos claramente
-          administrativos.
-        */
-
-        if (
-            /^(si|no|adjudicado)$/i.test(
-                value
-            )
-        ) {
-
-            continue;
-
-        }
-
-        return value;
-
-    }
-
-    return "";
-
-}
-
-
-/* =========================================================
-   ENCONTRAR CANTIDAD
-========================================================= */
-
-function findQuantity(
-    row,
-    header,
-    codeIndex
-) {
-
-    if (
-        header.quantity !== -1
-    ) {
-
-        return getCell(
-            row,
-            header.quantity
-        );
-
-    }
-
-    /*
-      Si no existe encabezado explícito,
-      buscamos un número después del código.
-    */
-
-    for (
-        let i = codeIndex + 1;
-        i < row.length;
-        i++
-    ) {
-
-        const value =
-            getCell(row, i);
-
-        if (!value) {
-            continue;
-        }
-
-        if (
-            /^\d+(?:[.,]\d+)?$/.test(
-                value
-            )
-        ) {
-
-            return value;
-
-        }
-
-    }
-
-    return "";
-
-}
-
-
-/* =========================================================
-   EXTRAER TODOS LOS ITEMS
-========================================================= */
-
-function extractItemsFromWorkbook(
+function extractWorkbookData(
     workbook
 ) {
 
-    const result = [];
-
-    /*
-      Guardamos información para diagnóstico.
-    */
+    const items = [];
 
     const debug = [];
+
 
     for (
         const sheetName of workbook.SheetNames
     ) {
 
         const ws =
-            workbook.Sheets[sheetName];
+            workbook.Sheets[
+                sheetName
+            ];
+
 
         const rows =
             XLSX.utils.sheet_to_json(
@@ -1301,7 +1086,7 @@ function extractItemsFromWorkbook(
 
         if (
             !rows ||
-            !rows.length
+            rows.length === 0
         ) {
 
             debug.push(
@@ -1314,24 +1099,30 @@ function extractItemsFromWorkbook(
         }
 
 
-        /*
-          Ignorar hojas de Items auxiliares.
-        */
-
         const normalizedSheet =
             normalizeText(
                 sheetName
             );
 
+
+        /*
+          Ignorar hojas llamadas Items,
+          Ítems, etc.
+        */
+
         if (
+            normalizedSheet === "items" ||
             normalizedSheet.startsWith(
-                "items"
+                "items "
+            ) ||
+            normalizedSheet.startsWith(
+                "ítems "
             )
         ) {
 
             debug.push(
                 sheetName +
-                ": ignorada como hoja auxiliar"
+                ": hoja auxiliar ignorada"
             );
 
             continue;
@@ -1340,18 +1131,23 @@ function extractItemsFromWorkbook(
 
 
         /*
-          Lotes indicados directamente
-          por el nombre de la hoja.
+          Lotes según el nombre de la hoja.
+
+          Ejemplo:
+
+          "Lotes III"
+
+          devuelve [3]
         */
 
         const sheetLots =
-            getLotsFromSheetName(
+            detectLotsFromSheetName(
                 sheetName
             );
 
 
         /*
-          Proveedor y RUC.
+          Proveedor.
         */
 
         const provider =
@@ -1359,11 +1155,51 @@ function extractItemsFromWorkbook(
                 rows
             );
 
-        const ruc =
-            extractRuc(
-                rows
-            );
 
+        /*
+          RUC.
+        */
+
+        let ruc = "";
+
+        for (
+            let i = 0;
+            i < Math.min(
+                rows.length,
+                50
+            );
+            i++
+        ) {
+
+            const joined =
+                rows[i]
+                    .map(cleanText)
+                    .filter(Boolean)
+                    .join(" ");
+
+            const detected =
+                extractRuc(
+                    joined
+                );
+
+            if (detected) {
+
+                ruc =
+                    detected;
+
+                break;
+
+            }
+
+        }
+
+
+        /*
+          Si la hoja contiene un solo lote
+          podemos usarlo inmediatamente.
+
+          "Lotes III" => 3
+        */
 
         let currentLot =
             sheetLots.length === 1
@@ -1371,19 +1207,17 @@ function extractItemsFromWorkbook(
                 : null;
 
 
-        let currentGroup =
-            "";
+        let currentGroup = "";
 
 
-        let currentHeader =
-            null;
+        let currentHeader = null;
 
 
-        let sheetItemCount = 0;
+        let count = 0;
 
 
         /*
-          Recorrer todas las filas.
+          Recorrer filas.
         */
 
         for (
@@ -1406,81 +1240,65 @@ function extractItemsFromWorkbook(
 
 
             /*
-              Detectar cambio de lote
-              dentro de la hoja.
-
-              Esto permite manejar:
-
-              Lotes II y III
-
-              aunque estén dentro
-              de la misma hoja.
+              Detectar lote dentro
+              del contenido de la fila.
             */
 
-            const detectedLot =
+            const rowLot =
                 detectLotInRow(
                     row
                 );
 
 
             if (
-                detectedLot !== null
+                rowLot !== null
             ) {
 
                 currentLot =
-                    detectedLot;
-
-                const detectedGroup =
-                    detectGroup(
-                        row
-                    );
-
-                if (
-                    detectedGroup
-                ) {
-
-                    currentGroup =
-                        detectedGroup;
-
-                }
-
-                /*
-                  Puede aparecer un nuevo
-                  encabezado después del lote.
-                */
+                    rowLot;
 
                 currentHeader =
                     null;
 
+
+                const group =
+                    detectGroup(
+                        row
+                    );
+
+                if (group) {
+
+                    currentGroup =
+                        group;
+
+                }
+
             }
 
 
             /*
-              Detectar grupo aunque no
-              haya cambio de lote.
+              Detectar grupo.
             */
 
-            const detectedGroup =
+            const group =
                 detectGroup(
                     row
                 );
 
-            if (
-                detectedGroup
-            ) {
+            if (group) {
 
                 currentGroup =
-                    detectedGroup;
+                    group;
 
             }
 
 
             /*
-              Detectar encabezado de items.
+              Buscar encabezado.
             */
 
             const header =
-                detectHeaderColumns(
+                detectHeader(
                     row
                 );
 
@@ -1490,29 +1308,13 @@ function extractItemsFromWorkbook(
                 currentHeader =
                     header;
 
-                /*
-                  Si no teníamos lote,
-                  pero la hoja tiene un único
-                  lote por nombre, usarlo.
-                */
-
-                if (
-                    currentLot === null &&
-                    sheetLots.length === 1
-                ) {
-
-                    currentLot =
-                        sheetLots[0];
-
-                }
-
                 continue;
 
             }
 
 
             /*
-              No procesar filas sin encabezado.
+              Sin encabezado, no hay item.
             */
 
             if (
@@ -1525,20 +1327,30 @@ function extractItemsFromWorkbook(
 
 
             /*
-              No procesar si no sabemos
-              el lote.
+              Si no tenemos lote pero la
+              hoja tiene un único lote,
+              usamos ese lote.
+            */
+
+            if (
+                currentLot === null &&
+                sheetLots.length === 1
+            ) {
+
+                currentLot =
+                    sheetLots[0];
+
+            }
+
+
+            /*
+              Si todavía no sabemos el lote,
+              no inventamos.
             */
 
             if (
                 currentLot === null
             ) {
-
-                /*
-                  Si la hoja dice Lotes II y III
-                  pero todavía no encontramos
-                  cuál de los dos corresponde,
-                  no inventamos el lote.
-                */
 
                 continue;
 
@@ -1549,17 +1361,16 @@ function extractItemsFromWorkbook(
               ITEM
             */
 
-            const itemValue =
-                getCell(
-                    row,
-                    currentHeader.item
+            const item =
+                cleanText(
+                    row[
+                        currentHeader.item
+                    ]
                 );
 
 
             if (
-                !/^\d+$/.test(
-                    itemValue
-                )
+                !/^\d+$/.test(item)
             ) {
 
                 continue;
@@ -1568,7 +1379,7 @@ function extractItemsFromWorkbook(
 
 
             if (
-                Number(itemValue) <= 0
+                Number(item) <= 0
             ) {
 
                 continue;
@@ -1580,11 +1391,41 @@ function extractItemsFromWorkbook(
               CÓDIGO
             */
 
-            const code =
-                getCell(
-                    row,
-                    currentHeader.code
+            let code =
+                cleanText(
+                    row[
+                        currentHeader.code
+                    ]
                 );
+
+
+            /*
+              Si el valor no parece código,
+              buscamos otro valor de la fila
+              que sí parezca código.
+            */
+
+            if (
+                !looksLikeProductCode(
+                    code
+                )
+            ) {
+
+                const possibleCode =
+                    findProductCode(
+                        row
+                    );
+
+                if (
+                    possibleCode
+                ) {
+
+                    code =
+                        possibleCode;
+
+                }
+
+            }
 
 
             if (!code) {
@@ -1598,41 +1439,127 @@ function extractItemsFromWorkbook(
               DESCRIPCIÓN
             */
 
-            const description =
-                findDescription(
-                    row,
-                    currentHeader,
-                    currentHeader.code
-                );
+            let description = "";
+
+
+            if (
+                currentHeader.description !== -1
+            ) {
+
+                description =
+                    cleanText(
+                        row[
+                            currentHeader.description
+                        ]
+                    );
+
+            }
+
+
+            /*
+              Si no hay columna explícita
+              de descripción, buscar texto
+              después del código.
+            */
+
+            if (!description) {
+
+                for (
+                    let i =
+                        currentHeader.code + 1;
+                    i < row.length;
+                    i++
+                ) {
+
+                    const value =
+                        cleanText(
+                            row[i]
+                        );
+
+
+                    if (!value) {
+                        continue;
+                    }
+
+
+                    if (
+                        /^\d+(?:[.,]\d+)?$/.test(
+                            value
+                        )
+                    ) {
+
+                        continue;
+
+                    }
+
+
+                    if (
+                        value.length < 3
+                    ) {
+
+                        continue;
+
+                    }
+
+
+                    if (
+                        /^(si|no)$/i.test(
+                            value
+                        )
+                    ) {
+
+                        continue;
+
+                    }
+
+
+                    description =
+                        value;
+
+                    break;
+
+                }
+
+            }
 
 
             /*
               CANTIDAD
             */
 
-            const quantity =
-                findQuantity(
-                    row,
-                    currentHeader,
-                    currentHeader.code
-                );
+            let quantity = "";
+
+
+            if (
+                currentHeader.quantity !== -1
+            ) {
+
+                quantity =
+                    cleanText(
+                        row[
+                            currentHeader.quantity
+                        ]
+                    );
+
+            }
 
 
             /*
               CANTIDAD ADJUDICADA
             */
 
-            let adjudicated =
-                "";
+            let adjudicated = "";
+
 
             if (
                 currentHeader.adjudicated !== -1
             ) {
 
                 adjudicated =
-                    getCell(
-                        row,
-                        currentHeader.adjudicated
+                    cleanText(
+                        row[
+                            currentHeader.adjudicated
+                        ]
                     );
 
             }
@@ -1642,51 +1569,33 @@ function extractItemsFromWorkbook(
               PRECIO
             */
 
-            let price =
-                "";
+            let price = "";
+
 
             if (
                 currentHeader.price !== -1
             ) {
 
                 price =
-                    getCell(
-                        row,
-                        currentHeader.price
+                    cleanText(
+                        row[
+                            currentHeader.price
+                        ]
                     );
 
             }
 
 
-            /*
-              Si no encontramos cantidad
-              adjudicada, usamos la cantidad.
-            */
+            items.push({
 
-            if (
-                !adjudicated
-            ) {
-
-                adjudicated =
-                    quantity;
-
-            }
-
-
-            /*
-              Si no hay precio explícito,
-              dejamos vacío.
-            */
-
-            result.push({
-
-                lot: currentLot,
+                lot:
+                    currentLot,
 
                 group:
                     currentGroup || "1",
 
                 item:
-                    itemValue,
+                    item,
 
                 code:
                     code,
@@ -1718,61 +1627,33 @@ function extractItemsFromWorkbook(
             });
 
 
-            sheetItemCount++;
+            count++;
 
         }
 
 
         debug.push(
             sheetName +
-            ": " +
-            sheetItemCount +
-            " artículos encontrados"
+            " → " +
+            count +
+            " artículos detectados"
         );
 
     }
 
 
     /*
-      Ordenar.
+      Eliminar duplicados.
     */
 
-    result.sort(
-        (a, b) => {
-
-            if (
-                a.lot !== b.lot
-            ) {
-
-                return (
-                    a.lot -
-                    b.lot
-                );
-
-            }
-
-            return (
-                Number(a.item) -
-                Number(b.item)
-            );
-
-        }
-    );
-
-
-    /*
-      Eliminar duplicados exactos.
-    */
-
-    const unique =
-        [];
+    const unique = [];
 
     const seen =
         new Set();
 
 
     for (
-        const item of result
+        const item of items
     ) {
 
         const key =
@@ -1799,6 +1680,34 @@ function extractItemsFromWorkbook(
     }
 
 
+    /*
+      Ordenar.
+    */
+
+    unique.sort(
+        (a, b) => {
+
+            if (
+                a.lot !== b.lot
+            ) {
+
+                return (
+                    a.lot -
+                    b.lot
+                );
+
+            }
+
+
+            return (
+                Number(a.item) -
+                Number(b.item)
+            );
+
+        }
+    );
+
+
     return {
         items: unique,
         debug: debug
@@ -1808,7 +1717,95 @@ function extractItemsFromWorkbook(
 
 
 /* =========================================================
-   CARGAR ARCHIVO
+   DETECTAR CÓDIGO DE PRODUCTO
+========================================================= */
+
+function looksLikeProductCode(
+    value
+) {
+
+    const text =
+        cleanText(value);
+
+
+    if (!text) {
+
+        return false;
+
+    }
+
+
+    /*
+      Formato habitual:
+
+      72101601-001
+      72131601-012
+      etc.
+    */
+
+    if (
+        /^\d{6,}-[\w-]+$/.test(
+            text
+        )
+    ) {
+
+        return true;
+
+    }
+
+
+    /*
+      Códigos numéricos largos.
+    */
+
+    if (
+        /^\d{8,}$/.test(
+            text
+        )
+    ) {
+
+        return true;
+
+    }
+
+
+    return false;
+
+}
+
+
+function findProductCode(
+    row
+) {
+
+    for (
+        const cell of row
+    ) {
+
+        const value =
+            cleanText(cell);
+
+
+        if (
+            looksLikeProductCode(
+                value
+            )
+        ) {
+
+            return value;
+
+        }
+
+    }
+
+
+    return "";
+
+}
+
+
+/* =========================================================
+   CARGA
 ========================================================= */
 
 fileInput.addEventListener(
@@ -1886,28 +1883,28 @@ uploadBox.addEventListener(
 
 
 /* =========================================================
-   PROCESAR EXCEL
+   PROCESAR
 ========================================================= */
 
 async function processFile(file) {
 
     clearStatus();
 
-    /*
-      El nombre del archivo NO importa.
 
-      Solo comprobamos que sea Excel.
+    /*
+      NO comprobamos el nombre del archivo.
+      Solamente su extensión.
     */
 
-    const lowerName =
+    const name =
         String(
             file.name
         ).toLowerCase();
 
 
     if (
-        !lowerName.endsWith(".xlsx") &&
-        !lowerName.endsWith(".xls")
+        !name.endsWith(".xlsx") &&
+        !name.endsWith(".xls")
     ) {
 
         showStatus(
@@ -1921,12 +1918,12 @@ async function processFile(file) {
 
 
     fileName.textContent =
-        "Archivo seleccionado: " +
+        "Archivo: " +
         file.name;
 
 
     showStatus(
-        "Leyendo el archivo Excel...",
+        "Analizando el archivo Excel...",
         "info"
     );
 
@@ -1948,87 +1945,85 @@ async function processFile(file) {
 
 
         console.log(
-            "Hojas del archivo:",
+            "Hojas:",
             workbook.SheetNames
         );
 
 
-        const extracted =
-            extractItemsFromWorkbook(
+        const result =
+            extractWorkbookData(
                 workbook
             );
 
 
         allItems =
-            extracted.items;
+            result.items;
 
 
         /*
-          Mostrar diagnóstico.
+          DIAGNÓSTICO
         */
 
         debugBox.style.display =
             "block";
 
+
         debugContent.textContent =
-            "Archivo: " +
+            "Archivo:\n" +
             file.name +
             "\n\n" +
 
             "Hojas detectadas:\n" +
+
             workbook.SheetNames
                 .map(
-                    name =>
-                        "• " + name
+                    x =>
+                        "• " + x
                 )
                 .join("\n") +
 
-            "\n\nResultado:\n" +
+            "\n\n" +
 
-            extracted.debug
-                .join("\n") +
+            result.debug.join(
+                "\n"
+            ) +
 
             "\n\nTotal de artículos: " +
             allItems.length;
 
 
         console.log(
-            "Resultado:",
+            "Items:",
             allItems
         );
 
-
-        /*
-          Si no encuentra artículos,
-          damos un mensaje detallado.
-        */
 
         if (
             !allItems.length
         ) {
 
             throw new Error(
-                "No se encontraron artículos.\n\n" +
+                "No se encontraron artículos en las hojas del Excel.\n\n" +
 
                 "Hojas detectadas:\n" +
 
-                workbook.SheetNames
-                    .join("\n") +
+                workbook.SheetNames.join(
+                    "\n"
+                ) +
 
                 "\n\n" +
 
-                "El programa busca encabezados como " +
-                "\"Item\" y \"Código Catálogo\"."
+                "El generador necesita encontrar una fila de encabezados que contenga Item y una columna de código de producto."
             );
 
         }
 
 
         /*
-          Proveedor.
+          PROVEEDOR
         */
 
-        const provider =
+        const providerItem =
             allItems.find(
                 item =>
                     item.provider
@@ -2036,23 +2031,22 @@ async function processFile(file) {
 
 
         if (
-            provider &&
-            provider.provider
+            providerItem
         ) {
 
             providerInput.value =
                 cleanProvider(
-                    provider.provider
+                    providerItem.provider
                 );
 
         }
 
 
         /*
-          RUC.
+          RUC
         */
 
-        const ruc =
+        const rucItem =
             allItems.find(
                 item =>
                     item.ruc
@@ -2060,18 +2054,17 @@ async function processFile(file) {
 
 
         if (
-            ruc &&
-            ruc.ruc
+            rucItem
         ) {
 
             rucInput.value =
-                ruc.ruc;
+                rucItem.ruc;
 
         }
 
 
         /*
-          Crear selector de lotes.
+          LOTES
         */
 
         populateLotSelector();
@@ -2082,15 +2075,13 @@ async function processFile(file) {
 
 
         showStatus(
-            "Excel cargado correctamente.\n" +
-            "Se encontraron " +
-            allItems.length +
-            " artículos.",
+            "Excel cargado correctamente.\n\n" +
+            "Artículos encontrados: " +
+            allItems.length,
             "success"
         );
 
     }
-
     catch (error) {
 
         console.error(
@@ -2114,12 +2105,12 @@ async function processFile(file) {
 
 
 /* =========================================================
-   SELECTOR DE LOTES
+   LOTES
 ========================================================= */
 
 function populateLotSelector() {
 
-    const numbers =
+    const lots =
         [
             ...new Set(
                 allItems.map(
@@ -2139,11 +2130,11 @@ function populateLotSelector() {
 
 
     if (
-        !numbers.length
+        !lots.length
     ) {
 
         lotSelect.innerHTML =
-            '<option value="">No hay lotes</option>';
+            '<option value="">No se encontraron lotes</option>';
 
         lotSelect.disabled =
             true;
@@ -2158,7 +2149,7 @@ function populateLotSelector() {
 
 
     for (
-        const number of numbers
+        const lot of lots
     ) {
 
         const option =
@@ -2168,12 +2159,12 @@ function populateLotSelector() {
 
 
         option.value =
-            number;
+            lot;
 
 
         option.textContent =
             "Lote " +
-            number;
+            lot;
 
 
         lotSelect.appendChild(
@@ -2233,8 +2224,6 @@ generateBtn.addEventListener(
 
         /*
           PROVEEDOR
-
-          Eliminamos siempre Adjudicado:
         */
 
         let provider =
@@ -2243,9 +2232,7 @@ generateBtn.addEventListener(
             );
 
 
-        if (
-            !provider
-        ) {
+        if (!provider) {
 
             provider =
                 cleanProvider(
@@ -2266,9 +2253,9 @@ generateBtn.addEventListener(
             [];
 
 
-        /* =================================================
-           METADATOS
-        ================================================= */
+        /*
+          METADATOS
+        */
 
         lines.push(
             csvRow([
@@ -2283,16 +2270,6 @@ generateBtn.addEventListener(
             ])
         );
 
-
-        /*
-          AQUÍ QUEDA:
-
-          "PROVEEDOR: NOMBRE..."
-
-          Y NO:
-
-          "PROVEEDOR: Adjudicado: NOMBRE..."
-        */
 
         lines.push(
             csvRow([
@@ -2314,17 +2291,14 @@ generateBtn.addEventListener(
         lines.push("");
 
 
-        /* =================================================
-           ENCABEZADOS
-        ================================================= */
-
         /*
-          csvRow() pone TODAS las columnas
-          entre comillas.
+          ENCABEZADOS
 
-          Resultado:
+          IMPORTANTE:
 
-          "Número Lote","Número Grupo",...
+          Queda exactamente:
+
+          "Número Lote"
         */
 
         lines.push(
@@ -2334,9 +2308,9 @@ generateBtn.addEventListener(
         );
 
 
-        /* =================================================
-           ITEMS
-        ================================================= */
+        /*
+          ARTÍCULOS
+        */
 
         for (
             const data of selectedItems
@@ -2489,9 +2463,9 @@ generateBtn.addEventListener(
         }
 
 
-        /* =================================================
-           CREAR ARCHIVO
-        ================================================= */
+        /*
+          CREAR CSV
+        */
 
         const csvContent =
             "\uFEFF" +
@@ -2552,9 +2526,9 @@ generateBtn.addEventListener(
         );
 
 
-        /* =================================================
-           PREVIEW
-        ================================================= */
+        /*
+          VISTA PREVIA
+        */
 
         preview.style.display =
             "block";
@@ -2572,7 +2546,7 @@ generateBtn.addEventListener(
 
 
         showStatus(
-            "CSV generado correctamente.\n" +
+            "CSV generado correctamente.\n\n" +
             "Lote: " +
             selectedLot +
             "\n" +
