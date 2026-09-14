@@ -8,169 +8,177 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
-    * {
-        box-sizing: border-box;
-    }
+* {
+    box-sizing: border-box;
+}
 
-    body {
-        margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background: #111827;
-        color: #f3f4f6;
-    }
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #111827;
+    color: #f3f4f6;
+}
 
-    .container {
-        width: min(1400px, 95%);
-        margin: 30px auto;
-    }
+.container {
+    width: min(1450px, 95%);
+    margin: 30px auto;
+}
 
-    h1 {
-        margin-bottom: 5px;
-    }
+h1 {
+    margin-bottom: 5px;
+}
 
-    .subtitle {
-        color: #9ca3af;
-        margin-bottom: 25px;
-    }
+.subtitle {
+    color: #9ca3af;
+    margin-bottom: 25px;
+}
 
-    .card {
-        background: #1f2937;
-        border: 1px solid #374151;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
+.card {
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
 
-    label {
-        display: block;
-        margin-bottom: 7px;
-        font-weight: bold;
-    }
+label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: bold;
+}
 
-    input[type="text"],
-    input[type="file"] {
-        width: 100%;
-        padding: 11px;
-        border-radius: 8px;
-        border: 1px solid #4b5563;
-        background: #111827;
-        color: white;
-    }
+input[type="text"] {
+    width: 100%;
+    padding: 11px;
+    border-radius: 8px;
+    border: 1px solid #4b5563;
+    background: #111827;
+    color: white;
+}
 
-    .dropzone {
-        border: 2px dashed #4b5563;
-        border-radius: 12px;
-        padding: 35px;
-        text-align: center;
-        cursor: pointer;
-        transition: .2s;
-    }
+.dropzone {
+    border: 2px dashed #4b5563;
+    border-radius: 12px;
+    padding: 35px;
+    text-align: center;
+    cursor: pointer;
+    transition: .2s;
+}
 
-    .dropzone:hover {
-        border-color: #60a5fa;
-        background: #172033;
-    }
+.dropzone:hover {
+    border-color: #60a5fa;
+    background: #172033;
+}
 
-    button {
-        background: #2563eb;
-        border: none;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 15px;
-        font-weight: bold;
-    }
+button {
+    background: #2563eb;
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+}
 
-    button:hover {
-        background: #1d4ed8;
-    }
+button:hover {
+    background: #1d4ed8;
+}
 
-    button:disabled {
-        opacity: .5;
-        cursor: not-allowed;
-    }
+button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
 
-    .success {
-        background: #064e3b;
-        border: 1px solid #059669;
-        padding: 12px;
-        border-radius: 8px;
-        margin-top: 15px;
-    }
+.success,
+.error,
+.warning {
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
 
-    .error {
-        background: #7f1d1d;
-        border: 1px solid #dc2626;
-        padding: 12px;
-        border-radius: 8px;
-        margin-top: 15px;
-    }
+.success {
+    background: #064e3b;
+    border: 1px solid #059669;
+}
 
-    .warning {
-        background: #78350f;
-        border: 1px solid #d97706;
-        padding: 12px;
-        border-radius: 8px;
-        margin-top: 15px;
-    }
+.error {
+    background: #7f1d1d;
+    border: 1px solid #dc2626;
+}
 
-    pre {
-        white-space: pre-wrap;
-        word-break: break-word;
-        background: #030712;
-        padding: 15px;
-        border-radius: 8px;
-        max-height: 500px;
-        overflow: auto;
-        font-size: 12px;
-    }
+.warning {
+    background: #78350f;
+    border: 1px solid #d97706;
+}
 
-    .table-wrapper {
-        overflow-x: auto;
-        max-height: 600px;
-        overflow-y: auto;
-    }
+pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: #030712;
+    padding: 15px;
+    border-radius: 8px;
+    max-height: 600px;
+    overflow: auto;
+    font-size: 12px;
+}
 
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        font-size: 12px;
-    }
+.table-wrapper {
+    overflow-x: auto;
+    max-height: 650px;
+    overflow-y: auto;
+}
 
-    th,
-    td {
-        border: 1px solid #374151;
-        padding: 7px;
-        text-align: left;
-        vertical-align: top;
-    }
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12px;
+}
 
-    th {
-        background: #111827;
-        position: sticky;
-        top: 0;
-        z-index: 2;
-    }
+th,
+td {
+    border: 1px solid #374151;
+    padding: 7px;
+    text-align: left;
+    vertical-align: top;
+}
 
-    .stats {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 15px;
-    }
+th {
+    background: #111827;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
 
-    .stat {
-        background: #111827;
-        border: 1px solid #374151;
-        padding: 10px 14px;
-        border-radius: 8px;
-    }
+.stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
 
-    .small {
-        color: #9ca3af;
-        font-size: 12px;
-    }
+.stat {
+    background: #111827;
+    border: 1px solid #374151;
+    padding: 10px 14px;
+    border-radius: 8px;
+}
+
+.small {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.download {
+    display: inline-block;
+    margin-top: 12px;
+    background: #059669;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
 </style>
 </head>
 
@@ -178,81 +186,88 @@
 
 <div class="container">
 
-    <h1>Generador CSV — Licitación 484012</h1>
-    <div class="subtitle">
-        Compatible con diferentes formatos de Cuadro de Precio Adjudicado
+<h1>Generador CSV — Licitación 484012</h1>
+
+<div class="subtitle">
+Compatible con diferentes formatos de Cuadro de Precio Adjudicado
+</div>
+
+<div class="card">
+
+<label>Archivo Excel</label>
+
+<div class="dropzone" id="dropzone">
+    <strong>Haz clic aquí o arrastra el Excel</strong>
+    <div class="small">
+        Se aceptan archivos .xlsx y .xls
     </div>
 
-    <div class="card">
+    <input
+        type="file"
+        id="fileInput"
+        accept=".xlsx,.xls"
+        style="display:none"
+    >
+</div>
 
-        <label>Archivo Excel</label>
+<div style="height:15px"></div>
 
-        <div class="dropzone" id="dropzone">
-            <strong>Haz clic aquí o arrastra el Excel</strong>
-            <div class="small">
-                Se aceptan .xlsx y .xls
-            </div>
-            <input
-                type="file"
-                id="fileInput"
-                accept=".xlsx,.xls"
-                style="display:none"
-            >
-        </div>
+<label>RUC del proveedor</label>
 
-        <div style="height:15px"></div>
+<input
+    type="text"
+    id="ruc"
+    placeholder="Opcional"
+/>
 
-        <label>RUC del proveedor</label>
+<div style="height:15px"></div>
 
-        <input
-            type="text"
-            id="ruc"
-            placeholder="Opcional. Ej.: 80012345-6"
-        >
+<button id="generateBtn" disabled>
+    Generar CSV
+</button>
 
-        <div style="height:15px"></div>
-
-        <button id="generateBtn" disabled>
-            Generar CSV
-        </button>
-
-        <div id="message"></div>
-
-    </div>
-
-    <div class="card">
-
-        <h3>Resultado</h3>
-
-        <div class="stats" id="stats"></div>
-
-        <div id="downloadArea"></div>
-
-    </div>
-
-    <div class="card">
-
-        <h3>Vista previa</h3>
-
-        <div class="table-wrapper">
-            <table id="previewTable"></table>
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <h3>Depuración</h3>
-
-        <pre id="debug"></pre>
-
-    </div>
+<div id="message"></div>
 
 </div>
+
+
+<div class="card">
+
+<h3>Resultado</h3>
+
+<div class="stats" id="stats"></div>
+
+<div id="downloadArea"></div>
+
+</div>
+
+
+<div class="card">
+
+<h3>Vista previa</h3>
+
+<div class="table-wrapper">
+<table id="previewTable"></table>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>Depuración</h3>
+
+<pre id="debug"></pre>
+
+</div>
+
+</div>
+
 
 <script>
 
 const OUTPUT_HEADERS = [
+
     "Número Lote",
     "Número Grupo",
     "Número Item",
@@ -268,27 +283,43 @@ const OUTPUT_HEADERS = [
     "Precio Unitario Adjudicado",
     "Atributo",
     "Descripción Atributo"
+
 ];
 
-/*
-    Hojas que nunca deben procesarse.
-*/
+
 const IGNORED_SHEETS = new Set([
     "ítems (3)",
     "items (3)"
 ]);
 
-let workbookData = null;
-let parsedData = null;
 
-const fileInput = document.getElementById("fileInput");
-const dropzone = document.getElementById("dropzone");
-const generateBtn = document.getElementById("generateBtn");
-const message = document.getElementById("message");
-const debug = document.getElementById("debug");
-const stats = document.getElementById("stats");
-const previewTable = document.getElementById("previewTable");
-const downloadArea = document.getElementById("downloadArea");
+let workbook = null;
+let parsedLots = [];
+
+
+const fileInput =
+    document.getElementById("fileInput");
+
+const dropzone =
+    document.getElementById("dropzone");
+
+const generateBtn =
+    document.getElementById("generateBtn");
+
+const message =
+    document.getElementById("message");
+
+const debug =
+    document.getElementById("debug");
+
+const stats =
+    document.getElementById("stats");
+
+const previewTable =
+    document.getElementById("previewTable");
+
+const downloadArea =
+    document.getElementById("downloadArea");
 
 
 dropzone.addEventListener("click", () => {
@@ -306,7 +337,9 @@ fileInput.addEventListener("change", e => {
 
 
 dropzone.addEventListener("dragover", e => {
+
     e.preventDefault();
+
 });
 
 
@@ -323,7 +356,10 @@ dropzone.addEventListener("drop", e => {
 
 function normalize(value) {
 
-    if (value === null || value === undefined) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
         return "";
     }
 
@@ -338,49 +374,12 @@ function normalize(value) {
 }
 
 
-function normalizeHeader(value) {
+function headerNormalize(value) {
 
     return normalize(value)
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "");
-
-}
-
-
-function cleanCode(value) {
-
-    return normalize(value)
-        .replace(/\s+/g, "")
-        .replace(/[‐-‒–—―]/g, "-");
-
-}
-
-
-/*
-    Código de catálogo típico:
-
-    72131601-002
-    80111613-9999
-*/
-function isCatalogCode(value) {
-
-    const code = cleanCode(value);
-
-    return /^\d{8}-\d{3,4}$/.test(code);
-
-}
-
-
-function isPositiveInteger(value) {
-
-    const s = normalize(value);
-
-    if (!/^\d+$/.test(s)) return false;
-
-    const n = Number(s);
-
-    return Number.isInteger(n) && n > 0;
 
 }
 
@@ -395,164 +394,46 @@ function rowText(row) {
 }
 
 
-/*
-    Detecta encabezados aunque estén:
+function cleanCode(value) {
 
-    Ítem
-    Código Catálogo
-    Descripción
-
-    o repartidos en varias filas.
-*/
-function detectHeaderAtRow(rows, start) {
-
-    const maxRows = Math.min(start + 3, rows.length);
-
-    const combined = [];
-
-    for (let c = 0; c < 20; c++) {
-
-        let value = "";
-
-        for (let r = start; r < maxRows; r++) {
-
-            const cell = normalize(rows[r]?.[c]);
-
-            if (cell) {
-
-                value += " " + cell;
-
-            }
-
-        }
-
-        combined[c] = normalizeHeader(value);
-
-    }
-
-    let itemCol = -1;
-    let codeCol = -1;
-    let descCol = -1;
-    let attrCol = -1;
-    let qtyCol = -1;
-    let charCol = -1;
-    let priceCol = -1;
-
-    for (let c = 0; c < combined.length; c++) {
-
-        const h = combined[c];
-
-        if (itemCol === -1 &&
-            (
-                h === "item" ||
-                h.includes("numero item") ||
-                h.includes("nro item")
-            )
-        ) {
-            itemCol = c;
-        }
-
-        if (codeCol === -1 &&
-            (
-                h.includes("codigo catalogo") ||
-                h.includes("codigo de catalogo") ||
-                h === "codigo"
-            )
-        ) {
-            codeCol = c;
-        }
-
-        if (descCol === -1 &&
-            h.includes("descripcion")
-        ) {
-            descCol = c;
-        }
-
-        if (attrCol === -1 &&
-            h === "atributos"
-        ) {
-            attrCol = c;
-        }
-
-        if (qtyCol === -1 &&
-            h.includes("cantidad")
-        ) {
-            qtyCol = c;
-        }
-
-        if (charCol === -1 &&
-            (
-                h.includes("caracteristicas") ||
-                h.includes("caracteristica")
-            )
-        ) {
-            charCol = c;
-        }
-
-        if (priceCol === -1 &&
-            h.includes("precio unitario")
-        ) {
-            priceCol = c;
-        }
-
-    }
-
-    /*
-        Incluso si falta alguna columna, consideramos que
-        la tabla es válida cuando tenemos al menos Ítem
-        y Código Catálogo.
-    */
-    if (itemCol !== -1 && codeCol !== -1) {
-
-        return {
-            row: start,
-            itemCol,
-            codeCol,
-            descCol,
-            attrCol,
-            qtyCol,
-            charCol,
-            priceCol
-        };
-
-    }
-
-    return null;
+    return normalize(value)
+        .replace(/\s+/g, "")
+        .replace(/[‐-‒–—―]/g, "-");
 
 }
 
 
 /*
-    Busca el texto de Lote.
+    Códigos de catálogo.
 
-    Acepta:
+    Ejemplos reales del archivo:
 
-    Lote I
-    Lote II
-    Lote III
-    Lote 1
-    Lote 25
-    LOTE IV
-    etc.
+    72131601-002
+    80111613-9999
 */
-function findLotText(text) {
+function isCatalogCode(value) {
 
-    const t = normalize(text);
+    const code = cleanCode(value);
 
-    const match = t.match(
-        /\bLote\s+([0-9]+|[IVXLCDM]+)\b/i
-    );
-
-    return match ? match[0] : "";
+    return /^\d{8}-\d{3,4}$/.test(code);
 
 }
 
 
-function romanToArabic(value) {
+function isInteger(value) {
 
-    const s = String(value).toUpperCase();
+    const s = normalize(value);
 
-    const values = {
+    return /^\d+$/.test(s);
+
+}
+
+
+function romanToNumber(value) {
+
+    const roman = String(value).toUpperCase();
+
+    const map = {
         I: 1,
         V: 5,
         X: 10,
@@ -562,51 +443,64 @@ function romanToArabic(value) {
         M: 1000
     };
 
-    let total = 0;
-    let prev = 0;
+    let result = 0;
+    let previous = 0;
 
-    for (let i = s.length - 1; i >= 0; i--) {
+    for (
+        let i = roman.length - 1;
+        i >= 0;
+        i--
+    ) {
 
-        const current = values[s[i]] || 0;
+        const current = map[roman[i]] || 0;
 
-        if (current < prev) {
-            total -= current;
+        if (current < previous) {
+            result -= current;
         } else {
-            total += current;
+            result += current;
         }
 
-        prev = current;
+        previous = current;
 
     }
 
-    return total;
+    return result;
 
 }
 
 
-function parseLotInfo(text) {
+/*
+    Detecta:
+
+    Lote I
+    Lote II
+    Lote III
+    Lote 1
+    Lote 25
+*/
+function getLotInfo(text) {
 
     const clean = normalize(text);
 
-    const lotMatch = clean.match(
+    const match = clean.match(
         /\bLote\s+([0-9]+|[IVXLCDM]+)\b/i
     );
 
-    let lotNumber = "";
+    if (!match) {
+        return null;
+    }
 
-    if (lotMatch) {
+    const rawNumber = match[1];
 
-        const raw = lotMatch[1];
+    let number;
 
-        if (/^\d+$/.test(raw)) {
+    if (/^\d+$/.test(rawNumber)) {
 
-            lotNumber = Number(raw);
+        number = Number(rawNumber);
 
-        } else {
+    } else {
 
-            lotNumber = romanToArabic(raw);
-
-        }
+        number = romanToNumber(rawNumber);
 
     }
 
@@ -622,14 +516,17 @@ function parseLotInfo(text) {
 
     let simultaneous = "No";
 
-    const simMatch = clean.match(
-        /Abastecimiento\s+Simultaneo\s*:\s*([^\s,]+)/i
-    );
+    const simultaneousMatch =
+        clean.match(
+            /Abastecimiento\s+Simultaneo\s*:\s*(Si|No)/i
+        );
 
-    if (simMatch) {
+    if (simultaneousMatch) {
 
         simultaneous =
-            /^si$/i.test(simMatch[1])
+            /^si$/i.test(
+                simultaneousMatch[1]
+            )
                 ? "Si"
                 : "No";
 
@@ -637,80 +534,89 @@ function parseLotInfo(text) {
 
     let contractType = "";
 
-    const contractMatch = clean.match(
-        /Contrato\s+Abierto\s*:\s*([^,]+)/i
-    );
+    const contractMatch =
+        clean.match(
+            /Contrato\s+Abierto\s*:\s*([^,]+)/i
+        );
 
     if (contractMatch) {
 
-        const value = normalize(contractMatch[1]);
+        const contract =
+            normalize(contractMatch[1]);
 
-        if (/por monto/i.test(value)) {
+        if (/por monto/i.test(contract)) {
 
             contractType = "Por Monto";
 
         } else {
 
-            contractType = value;
+            contractType = contract;
 
         }
 
     }
 
     return {
-        number: lotNumber,
+
+        number,
+
         group,
+
         simultaneous,
+
         contractType,
+
         text: clean
+
     };
 
 }
 
 
 /*
-    Extrae proveedor buscando TODAS las filas.
+    Encuentra proveedor.
 */
-function findProviderInSheet(rows) {
+function findProvider(rows) {
 
-    for (let r = 0; r < rows.length; r++) {
+    for (
+        let r = 0;
+        r < rows.length;
+        r++
+    ) {
 
-        for (let c = 0; c < rows[r].length; c++) {
+        const row = rows[r] || [];
 
-            const value = normalize(rows[r][c]);
+        for (
+            let c = 0;
+            c < row.length;
+            c++
+        ) {
 
-            if (!value) continue;
+            const value =
+                normalize(row[c]);
 
-            if (/^adjudicado\s*:?\s*$/i.test(value)) {
+            if (
+                /^Adjudicado\s*:?\s*$/i.test(value)
+            ) {
 
                 /*
-                    Normalmente el nombre está en la siguiente
-                    celda de la misma fila.
+                    Normalmente está en la siguiente
+                    columna.
                 */
-                for (let nc = c + 1; nc < rows[r].length; nc++) {
+                for (
+                    let x = c + 1;
+                    x < row.length;
+                    x++
+                ) {
 
-                    const next = normalize(rows[r][nc]);
+                    const next =
+                        normalize(row[x]);
 
                     if (next) {
-                        return parseProvider(next);
-                    }
 
-                }
-
-                /*
-                    En caso de estar debajo.
-                */
-                for (let nr = r + 1; nr < Math.min(r + 3, rows.length); nr++) {
-
-                    const nextRow = rows[nr] || [];
-
-                    for (const cell of nextRow) {
-
-                        const next = normalize(cell);
-
-                        if (next) {
-                            return parseProvider(next);
-                        }
+                        return cleanProvider(
+                            next
+                        );
 
                     }
 
@@ -731,45 +637,48 @@ function findProviderInSheet(rows) {
 }
 
 
-function parseProvider(value) {
+function cleanProvider(value) {
 
-    let name = normalize(value);
+    let text = normalize(value);
 
     let ruc = "";
     let ci = "";
 
-    const rucMatch = name.match(
-        /\bRUC\s*:?\s*([0-9]+-[0-9kK]+)\b/i
-    );
+    const rucMatch =
+        text.match(
+            /\bRUC\s*:?\s*([0-9]+-[0-9kK]+)\b/i
+        );
 
     if (rucMatch) {
-
         ruc = rucMatch[1];
-
     }
 
-    const ciMatch = name.match(
-        /\bC\.?\s*I\.?\s*N?\.?\s*[°º]?\s*:?\s*([0-9.]+)/i
-    );
+    const ciMatch =
+        text.match(
+            /C\.?\s*I\.?\s*N?\.?\s*[°º]?\s*:?\s*([0-9.]+)/i
+        );
 
     if (ciMatch) {
-
         ci = ciMatch[1];
-
     }
 
-    /*
-        Elimina datos identificatorios del nombre mostrado
-        cuando aparecen después de "Con C.I."
-    */
-    name = name
-        .replace(/\s+Con\s+C\.?\s*I\.?.*$/i, "")
-        .replace(/\s+RUC\s*:?.*$/i, "")
-        .replace(/\s+-\s*$/g, "")
+    text = text
+        .replace(
+            /\s+Con\s+C\.?\s*I\.?.*$/i,
+            ""
+        )
+        .replace(
+            /\s+RUC\s*:?.*$/i,
+            ""
+        )
+        .replace(
+            /\s+-\s*$/g,
+            ""
+        )
         .trim();
 
     return {
-        name,
+        name: text,
         ruc,
         ci
     };
@@ -778,13 +687,199 @@ function parseProvider(value) {
 
 
 /*
-    Busca un código de catálogo en cualquier parte de la fila.
+    Detecta las columnas por encabezados.
+
+    NO es obligatorio utilizar todas.
 */
-function findCatalogCodeInRow(row) {
+function detectColumns(rows, headerRow) {
 
-    for (let c = 0; c < row.length; c++) {
+    const result = {
 
-        const code = cleanCode(row[c]);
+        item: -1,
+        code: -1,
+        description: -1,
+        attributes: -1,
+        quantity: -1,
+        characteristics: -1,
+        price: -1
+
+    };
+
+
+    /*
+        Miramos hasta 3 filas para soportar
+        encabezados partidos.
+    */
+    for (
+        let c = 0;
+        c < 30;
+        c++
+    ) {
+
+        let combined = "";
+
+        for (
+            let r = headerRow;
+            r < Math.min(
+                headerRow + 3,
+                rows.length
+            );
+            r++
+        ) {
+
+            combined +=
+                " " +
+                normalize(
+                    rows[r]?.[c]
+                );
+
+        }
+
+        const h =
+            headerNormalize(combined);
+
+
+        if (
+            result.item === -1 &&
+            (
+                h === "item" ||
+                h.includes("numero item") ||
+                h.includes("nro item")
+            )
+        ) {
+
+            result.item = c;
+
+        }
+
+
+        if (
+            result.code === -1 &&
+            (
+                h.includes("codigo catalogo") ||
+                h.includes("codigo de catalogo")
+            )
+        ) {
+
+            result.code = c;
+
+        }
+
+
+        if (
+            result.description === -1 &&
+            h.includes("descripcion")
+        ) {
+
+            result.description = c;
+
+        }
+
+
+        if (
+            result.attributes === -1 &&
+            h.includes("atributos")
+        ) {
+
+            result.attributes = c;
+
+        }
+
+
+        if (
+            result.quantity === -1 &&
+            h === "cantidad"
+        ) {
+
+            result.quantity = c;
+
+        }
+
+
+        if (
+            result.characteristics === -1 &&
+            (
+                h.includes("caracteristica") ||
+                h.includes("caracteristicas")
+            )
+        ) {
+
+            result.characteristics = c;
+
+        }
+
+
+        if (
+            result.price === -1 &&
+            h.includes("precio unitario")
+        ) {
+
+            result.price = c;
+
+        }
+
+    }
+
+
+    return result;
+
+}
+
+
+/*
+    Busca encabezados en toda la hoja.
+*/
+function findHeaderRows(rows) {
+
+    const headers = [];
+
+    for (
+        let r = 0;
+        r < rows.length;
+        r++
+    ) {
+
+        const columns =
+            detectColumns(rows, r);
+
+        /*
+            Para considerar que es una tabla,
+            basta Ítem + Código Catálogo.
+        */
+        if (
+            columns.item !== -1 &&
+            columns.code !== -1
+        ) {
+
+            headers.push({
+
+                row: r,
+                columns
+
+            });
+
+        }
+
+    }
+
+    return headers;
+
+}
+
+
+/*
+    Encuentra código en cualquier columna.
+*/
+function findCode(row) {
+
+    for (
+        let c = 0;
+        c < row.length;
+        c++
+    ) {
+
+        const code =
+            cleanCode(row[c]);
 
         if (isCatalogCode(code)) {
 
@@ -803,47 +898,57 @@ function findCatalogCodeInRow(row) {
 
 
 /*
-    Busca el número de ítem más cercano a la izquierda
-    del código de catálogo.
+    Encuentra número de ítem.
+
+    Primero busca hacia la izquierda
+    del código.
 */
-function findItemNumber(row, codeCol) {
+function findItem(row, codeCol) {
 
-    /*
-        Primero buscamos directamente a la izquierda.
-    */
-    for (let c = codeCol - 1; c >= 0; c--) {
+    for (
+        let c = codeCol - 1;
+        c >= 0;
+        c--
+    ) {
 
-        const value = normalize(row[c]);
+        const value =
+            normalize(row[c]);
 
-        if (isPositiveInteger(value)) {
+        if (
+            isInteger(value) &&
+            Number(value) > 0
+        ) {
 
-            return {
-                item: Number(value),
-                col: c
-            };
+            return Number(value);
 
         }
 
-        /*
-            No cruzar demasiadas columnas.
-        */
-        if (codeCol - c > 5) break;
+        if (
+            codeCol - c >= 5
+        ) {
+            break;
+        }
 
     }
 
     /*
-        Si no existe a la izquierda, buscamos toda la fila.
+        Segunda búsqueda.
     */
-    for (let c = 0; c < row.length; c++) {
+    for (
+        let c = 0;
+        c < row.length;
+        c++
+    ) {
 
-        const value = normalize(row[c]);
+        const value =
+            normalize(row[c]);
 
-        if (isPositiveInteger(value)) {
+        if (
+            isInteger(value) &&
+            Number(value) > 0
+        ) {
 
-            return {
-                item: Number(value),
-                col: c
-            };
+            return Number(value);
 
         }
 
@@ -854,418 +959,918 @@ function findItemNumber(row, codeCol) {
 }
 
 
-function parseCharacteristics(value) {
+/*
+    Obtiene descripción.
 
-    const text = normalize(value);
+    Primero usa la columna detectada.
+    Si no existe, busca texto alrededor del código.
+*/
+function findDescription(
+    row,
+    columns,
+    codeCol
+) {
 
-    const result = {
-        procedencia: "",
-        certificado: ""
-    };
+    if (
+        columns.description !== -1
+    ) {
 
-    if (!text) return result;
+        const value =
+            normalize(
+                row[columns.description]
+            );
 
-    let match = text.match(
-        /Procedencia\s*:\s*([^]+?)(?=\s+nro[_\s-]*certificado|$)/i
-    );
-
-    if (match) {
-
-        result.procedencia = normalize(match[1]);
-
-    }
-
-    match = text.match(
-        /nro[_\s-]*certificado[_\s-]*origen[_\s-]*nacional\s*:\s*([^\s,;]+)/i
-    );
-
-    if (match) {
-
-        result.certificado = normalize(match[1]);
-
-    }
-
-    /*
-        En algunos Excel "Procedencia" puede venir separada.
-    */
-    if (!result.procedencia) {
-
-        match = text.match(
-            /Procedencia\s*:\s*([A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{2,})/i
-        );
-
-        if (match) {
-            result.procedencia = normalize(match[1]);
+        if (value) {
+            return value;
         }
 
     }
+
+
+    /*
+        Buscar después del código.
+    */
+    for (
+        let c = codeCol + 1;
+        c < row.length;
+        c++
+    ) {
+
+        const value =
+            normalize(row[c]);
+
+        if (!value) continue;
+
+        if (
+            isCatalogCode(value) ||
+            isInteger(value)
+        ) {
+            continue;
+        }
+
+        if (
+            /Procedencia\s*:/i.test(value) ||
+            /certificado.*origen/i.test(value)
+        ) {
+            continue;
+        }
+
+        if (
+            /unidad\s+de\s+medida\s*:/i.test(value)
+        ) {
+            continue;
+        }
+
+        return value;
+
+    }
+
+    return "";
+
+}
+
+
+/*
+    Características.
+*/
+function findCharacteristics(
+    row,
+    columns
+) {
+
+    let text = "";
+
+    if (
+        columns.characteristics !== -1
+    ) {
+
+        text =
+            normalize(
+                row[columns.characteristics]
+            );
+
+    }
+
+
+    /*
+        Si no está en la columna esperada,
+        buscamos Procedencia o certificado
+        en toda la fila.
+    */
+    if (
+        !text ||
+        (
+            !/Procedencia\s*:/i.test(text) &&
+            !/certificado.*origen/i.test(text)
+        )
+    ) {
+
+        const parts = [];
+
+        for (const cell of row) {
+
+            const value =
+                normalize(cell);
+
+            if (
+                /Procedencia\s*:/i.test(value) ||
+                /certificado.*origen/i.test(value)
+            ) {
+
+                parts.push(value);
+
+            }
+
+        }
+
+        if (parts.length) {
+
+            text =
+                parts.join(" ");
+
+        }
+
+    }
+
+    return text;
+
+}
+
+
+/*
+    Extrae atributos.
+*/
+function parseAttributes(text) {
+
+    const result = {
+
+        procedencia: "",
+        certificado: ""
+
+    };
+
+
+    const proc =
+        text.match(
+            /Procedencia\s*:\s*(.*?)(?=\s+nro[_\s-]*certificado|$)/i
+        );
+
+    if (proc) {
+
+        result.procedencia =
+            normalize(proc[1]);
+
+    }
+
+
+    const cert =
+        text.match(
+            /nro[_\s-]*certificado[_\s-]*origen[_\s-]*nacional\s*:\s*([^\s,;]+)/i
+        );
+
+    if (cert) {
+
+        result.certificado =
+            normalize(cert[1]);
+
+    }
+
 
     return result;
 
 }
 
 
-function extractItemsFromSheet(rows, header, lot) {
+/*
+    IMPORTANTE:
 
-    const items = [];
+    Este es el nuevo algoritmo principal.
 
-    if (!header || !lot) {
-        return items;
-    }
+    No depende de que el lote esté antes
+    o después del encabezado.
+*/
+function parseSheet(rows, sheetName) {
+
+    const debugLines = [];
+
+    const headers =
+        findHeaderRows(rows);
+
+    debugLines.push(
+        `Hoja "${sheetName}": ${headers.length} encabezado(s) encontrado(s).`
+    );
+
+
+    /*
+        Primero localizamos TODAS las filas
+        que contienen "Lote".
+    */
+    const lotPositions = [];
 
     for (
-        let r = header.row + 1;
+        let r = 0;
         r < rows.length;
         r++
     ) {
 
-        const row = rows[r] || [];
+        const text =
+            rowText(rows[r] || []);
 
-        const text = rowText(row);
+        const lot =
+            getLotInfo(text);
 
-        if (!text) continue;
+        if (lot) {
 
-        /*
-            Si encontramos otro lote, el parser principal
-            se encargará de cambiar de lote.
-        */
-        if (findLotText(text)) {
-            continue;
-        }
+            lotPositions.push({
 
-        /*
-            Ignorar encabezados repetidos.
-        */
-        const normalizedRow = normalizeHeader(text);
+                row: r,
+                lot
 
-        if (
-            normalizedRow.includes("codigo catalogo") &&
-            normalizedRow.includes("descripcion")
-        ) {
-            continue;
-        }
+            });
 
-        /*
-            Ignorar totales.
-        */
-        if (
-            /\btotal\b/i.test(text) ||
-            /\bsubtotal\b/i.test(text) ||
-            /\bobservacion\b/i.test(text) ||
-            /\bobservaciones\b/i.test(text)
-        ) {
-            continue;
-        }
-
-        const catalog = findCatalogCodeInRow(row);
-
-        if (!catalog) continue;
-
-        const itemInfo = findItemNumber(row, catalog.col);
-
-        /*
-            Un código sin número de ítem no se considera
-            adjudicación válida.
-        */
-        if (!itemInfo) continue;
-
-        let description = "";
-
-        if (
-            header.descCol >= 0 &&
-            row[header.descCol] !== undefined
-        ) {
-            description = normalize(row[header.descCol]);
-        }
-
-        /*
-            Si la columna de descripción no fue encontrada,
-            buscar el texto más cercano al código.
-        */
-        if (!description) {
-
-            for (
-                let c = catalog.col + 1;
-                c < row.length;
-                c++
-            ) {
-
-                const value = normalize(row[c]);
-
-                if (!value) continue;
-
-                if (
-                    isCatalogCode(value) ||
-                    isPositiveInteger(value)
-                ) {
-                    continue;
-                }
-
-                if (
-                    /procedencia\s*:/i.test(value) ||
-                    /certificado/i.test(value)
-                ) {
-                    continue;
-                }
-
-                description = value;
-                break;
-
-            }
-
-        }
-
-        let quantity = "";
-
-        if (
-            header.qtyCol >= 0 &&
-            row[header.qtyCol] !== undefined
-        ) {
-            quantity = normalize(row[header.qtyCol]);
-        }
-
-        let characteristics = "";
-
-        if (
-            header.charCol >= 0 &&
-            row[header.charCol] !== undefined
-        ) {
-            characteristics = normalize(row[header.charCol]);
-        }
-
-        /*
-            Si no encontramos Caracteristicas,
-            buscar en toda la fila.
-        */
-        if (!characteristics) {
-
-            for (const cell of row) {
-
-                const value = normalize(cell);
-
-                if (
-                    /Procedencia\s*:/i.test(value) ||
-                    /certificado[_\s-]*origen/i.test(value)
-                ) {
-
-                    characteristics +=
-                        (characteristics ? " " : "") +
-                        value;
-
-                }
-
-            }
-
-        }
-
-        let price = "";
-
-        if (
-            header.priceCol >= 0 &&
-            row[header.priceCol] !== undefined
-        ) {
-            price = normalize(row[header.priceCol]);
-        }
-
-        const attributes = parseCharacteristics(
-            characteristics
-        );
-
-        items.push({
-
-            item: itemInfo.item,
-
-            code: catalog.code,
-
-            description,
-
-            quantity,
-
-            price,
-
-            procedencia: attributes.procedencia,
-
-            certificado: attributes.certificado
-
-        });
-
-    }
-
-    return items;
-
-}
-
-
-/*
-    Parser principal.
-
-    IMPORTANTE:
-
-    El lote puede aparecer ANTES del encabezado
-    o DESPUÉS del encabezado.
-
-    Por eso currentLot y currentHeader
-    son independientes.
-*/
-function parseSheet(rows, sheetName) {
-
-    const result = [];
-
-    let currentLot = null;
-    let currentHeader = null;
-
-    const sheetDebug = [];
-
-    for (let r = 0; r < rows.length; r++) {
-
-        const row = rows[r] || [];
-
-        const text = rowText(row);
-
-        if (!text) continue;
-
-        /*
-            1. Detectar lote SIEMPRE.
-        */
-        const lotText = findLotText(text);
-
-        if (lotText) {
-
-            currentLot = parseLotInfo(text);
-
-            sheetDebug.push(
-                `Fila ${r + 1}: LOTE DETECTADO -> ${lotText} | ` +
-                `N°=${currentLot.number} | ` +
-                `Grupo=${currentLot.group} | ` +
-                `${currentLot.contractType} | ` +
-                `Simultáneo=${currentLot.simultaneous}`
+            debugLines.push(
+                `Lote detectado en fila ${r + 1}: ` +
+                `Lote ${lot.number}, Grupo ${lot.group}`
             );
 
         }
 
-        /*
-            2. Detectar encabezado SIEMPRE.
-        */
-        const header = detectHeaderAtRow(rows, r);
-
-        if (header) {
-
-            currentHeader = header;
-
-            sheetDebug.push(
-                `Fila ${r + 1}: ENCABEZADO DETECTADO -> ` +
-                `Ítem=${header.itemCol}, ` +
-                `Código=${header.codeCol}, ` +
-                `Descripción=${header.descCol}, ` +
-                `Atributos=${header.attrCol}, ` +
-                `Cantidad=${header.qtyCol}, ` +
-                `Características=${header.charCol}, ` +
-                `Precio=${header.priceCol}`
-            );
-
-        }
-
-        /*
-            3. Si tenemos ambos, intentar leer ítems
-            desde el encabezado.
-        */
-        if (currentLot && currentHeader) {
-
-            /*
-                Solo procesamos una vez por cada combinación
-                de encabezado + lote.
-            */
-            const key =
-                `${currentLot.number}-${currentLot.group}-${currentHeader.row}`;
-
-            if (!result.some(x => x._parseKey === key)) {
-
-                const items =
-                    extractItemsFromSheet(
-                        rows,
-                        currentHeader,
-                        currentLot
-                    );
-
-                if (items.length) {
-
-                    sheetDebug.push(
-                        `Fila ${r + 1}: ` +
-                        `${items.length} ÍTEMS DETECTADOS`
-                    );
-
-                    result.push({
-
-                        lot: currentLot,
-
-                        header: currentHeader,
-
-                        items,
-
-                        _parseKey: key
-
-                    });
-
-                }
-
-            }
-
-        }
-
     }
+
+
+    const results = [];
+
 
     /*
-        Fallback adicional:
-        si por alguna razón el encabezado no fue asociado
-        al lote, buscamos cualquier tabla válida.
+        Para cada encabezado encontramos
+        el lote correspondiente.
+
+        Esto permite ambos formatos:
+
+        FORMATO A:
+        encabezado
+        lote
+        ítems
+
+        FORMATO B:
+        lote
+        encabezado
+        ítems
     */
-    if (!result.length) {
+    for (
+        let h = 0;
+        h < headers.length;
+        h++
+    ) {
 
-        for (let r = 0; r < rows.length; r++) {
+        const header =
+            headers[h];
 
-            const header = detectHeaderAtRow(rows, r);
+        const nextHeaderRow =
+            h + 1 < headers.length
+                ? headers[h + 1].row
+                : rows.length;
 
-            if (!header) continue;
 
-            const items = extractItemsFromSheet(
-                rows,
-                header,
-                {
-                    number: 1,
-                    group: 1,
-                    simultaneous: "No",
-                    contractType: "",
-                    text: sheetName
-                }
-            );
+        /*
+            Buscar el lote más cercano al encabezado.
+        */
+        let selectedLot = null;
+        let bestDistance = Infinity;
 
-            if (items.length) {
 
-                sheetDebug.push(
-                    `FALLBACK: tabla detectada en fila ${r + 1} ` +
-                    `sin lote explícito.`
+        for (const lp of lotPositions) {
+
+            /*
+                El lote debe estar razonablemente
+                cerca del encabezado.
+
+                Permitimos lote antes o después.
+            */
+            const distance =
+                Math.abs(
+                    lp.row - header.row
                 );
 
-                result.push({
+            if (
+                distance < bestDistance &&
+                distance <= 15
+            ) {
 
-                    lot: {
-                        number: 1,
-                        group: 1,
-                        simultaneous: "No",
-                        contractType: "",
-                        text: sheetName
-                    },
+                selectedLot = lp.lot;
+                bestDistance = distance;
 
-                    header,
+            }
 
-                    items,
+        }
 
-                    _parseKey:
-                        `fallback-${sheetName}-${r}`
+
+        /*
+            Si no hay lote cercano, intentar
+            buscarlo hacia adelante hasta el
+            siguiente encabezado.
+        */
+        if (!selectedLot) {
+
+            for (
+                let r = header.row;
+                r < nextHeaderRow;
+                r++
+            ) {
+
+                const lot =
+                    getLotInfo(
+                        rowText(rows[r] || [])
+                    );
+
+                if (lot) {
+
+                    selectedLot = lot;
+                    break;
+
+                }
+
+            }
+
+        }
+
+
+        /*
+            Último fallback:
+            si hay un único lote en la hoja.
+        */
+        if (
+            !selectedLot &&
+            lotPositions.length === 1
+        ) {
+
+            selectedLot =
+                lotPositions[0].lot;
+
+        }
+
+
+        if (!selectedLot) {
+
+            debugLines.push(
+                `Encabezado fila ${header.row + 1}: ` +
+                `NO se pudo asociar a un lote.`
+            );
+
+            continue;
+
+        }
+
+
+        const items = [];
+
+
+        /*
+            El rango comienza DESPUÉS del encabezado.
+
+            Si el lote estaba después del encabezado,
+            igual funciona porque simplemente se ignoran
+            las filas que no tengan código.
+        */
+        let startRow =
+            header.row + 1;
+
+
+        /*
+            El final será el siguiente encabezado,
+            o el final de la hoja.
+        */
+        let endRow =
+            nextHeaderRow;
+
+
+        for (
+            let r = startRow;
+            r < endRow;
+            r++
+        ) {
+
+            const row =
+                rows[r] || [];
+
+            const text =
+                rowText(row);
+
+            if (!text) continue;
+
+
+            /*
+                Si aparece otro lote antes del
+                siguiente encabezado, no usarlo
+                como ítem.
+            */
+            if (getLotInfo(text)) {
+
+                continue;
+
+            }
+
+
+            /*
+                Ignorar encabezados repetidos.
+            */
+            const normalized =
+                headerNormalize(text);
+
+            if (
+                normalized.includes(
+                    "codigo catalogo"
+                ) &&
+                normalized.includes(
+                    "descripcion"
+                )
+            ) {
+
+                continue;
+
+            }
+
+
+            /*
+                Buscar código directamente.
+            */
+            const codeInfo =
+                findCode(row);
+
+            if (!codeInfo) {
+
+                continue;
+
+            }
+
+
+            /*
+                Buscar número de ítem.
+            */
+            const itemNumber =
+                findItem(
+                    row,
+                    codeInfo.col
+                );
+
+            if (!itemNumber) {
+
+                continue;
+
+            }
+
+
+            /*
+                Evitar duplicados.
+            */
+            const duplicate =
+                items.some(
+                    item =>
+                        item.item === itemNumber &&
+                        item.code === codeInfo.code
+                );
+
+            if (duplicate) {
+
+                continue;
+
+            }
+
+
+            const description =
+                findDescription(
+                    row,
+                    header.columns,
+                    codeInfo.col
+                );
+
+
+            let quantity = "";
+
+            if (
+                header.columns.quantity !== -1
+            ) {
+
+                quantity =
+                    normalize(
+                        row[
+                            header.columns.quantity
+                        ]
+                    );
+
+            }
+
+
+            let price = "";
+
+            if (
+                header.columns.price !== -1
+            ) {
+
+                price =
+                    normalize(
+                        row[
+                            header.columns.price
+                        ]
+                    );
+
+            }
+
+
+            const characteristics =
+                findCharacteristics(
+                    row,
+                    header.columns
+                );
+
+
+            const attributes =
+                parseAttributes(
+                    characteristics
+                );
+
+
+            items.push({
+
+                item: itemNumber,
+
+                code: codeInfo.code,
+
+                description,
+
+                quantity,
+
+                price,
+
+                procedencia:
+                    attributes.procedencia,
+
+                certificado:
+                    attributes.certificado
+
+            });
+
+        }
+
+
+        /*
+            FALLBACK MUY IMPORTANTE:
+
+            Si no encontramos ítems usando
+            el encabezado, buscamos desde el
+            encabezado hasta antes del siguiente
+            lote/encabezado.
+
+            Esto hace el sistema todavía más
+            tolerante con Excel combinados.
+        */
+        if (!items.length) {
+
+            const fallbackStart =
+                Math.max(
+                    0,
+                    header.row + 1
+                );
+
+            const fallbackEnd =
+                Math.min(
+                    rows.length,
+                    header.row + 500
+                );
+
+
+            for (
+                let r = fallbackStart;
+                r < fallbackEnd;
+                r++
+            ) {
+
+                const row =
+                    rows[r] || [];
+
+                const codeInfo =
+                    findCode(row);
+
+                if (!codeInfo) {
+                    continue;
+                }
+
+
+                const itemNumber =
+                    findItem(
+                        row,
+                        codeInfo.col
+                    );
+
+                if (!itemNumber) {
+                    continue;
+                }
+
+
+                const exists =
+                    items.some(
+                        item =>
+                            item.item === itemNumber &&
+                            item.code === codeInfo.code
+                    );
+
+                if (exists) {
+                    continue;
+                }
+
+
+                const description =
+                    findDescription(
+                        row,
+                        header.columns,
+                        codeInfo.col
+                    );
+
+
+                const characteristics =
+                    findCharacteristics(
+                        row,
+                        header.columns
+                    );
+
+
+                const attributes =
+                    parseAttributes(
+                        characteristics
+                    );
+
+
+                items.push({
+
+                    item: itemNumber,
+
+                    code: codeInfo.code,
+
+                    description,
+
+                    quantity:
+                        header.columns.quantity !== -1
+                            ? normalize(
+                                row[
+                                    header.columns.quantity
+                                ]
+                            )
+                            : "",
+
+                    price:
+                        header.columns.price !== -1
+                            ? normalize(
+                                row[
+                                    header.columns.price
+                                ]
+                            )
+                            : "",
+
+                    procedencia:
+                        attributes.procedencia,
+
+                    certificado:
+                        attributes.certificado
 
                 });
 
-                break;
+            }
+
+        }
+
+
+        if (items.length) {
+
+            debugLines.push(
+                `Lote ${selectedLot.number} ` +
+                `/ Grupo ${selectedLot.group}: ` +
+                `${items.length} ítems detectados.`
+            );
+
+
+            results.push({
+
+                lot: selectedLot,
+
+                items,
+
+                sheetName
+
+            });
+
+        } else {
+
+            debugLines.push(
+                `Lote ${selectedLot.number} ` +
+                `/ Grupo ${selectedLot.group}: ` +
+                `NO se encontraron ítems.`
+            );
+
+        }
+
+    }
+
+
+    /*
+        Si el método anterior no encontró nada,
+        realizar una búsqueda TOTAL independiente.
+
+        Esto evita que una estructura inesperada
+        del Excel bloquee la importación.
+    */
+    if (!results.length) {
+
+        debugLines.push(
+            "Activando búsqueda independiente de códigos de catálogo..."
+        );
+
+
+        for (const lp of lotPositions) {
+
+            const items = [];
+
+
+            /*
+                Tomamos hasta el próximo lote.
+            */
+            let end =
+                rows.length;
+
+            for (const other of lotPositions) {
+
+                if (
+                    other.row > lp.row &&
+                    other.row < end
+                ) {
+
+                    end = other.row;
+
+                }
+
+            }
+
+
+            for (
+                let r = lp.row + 1;
+                r < end;
+                r++
+            ) {
+
+                const row =
+                    rows[r] || [];
+
+                const codeInfo =
+                    findCode(row);
+
+                if (!codeInfo) {
+                    continue;
+                }
+
+
+                const itemNumber =
+                    findItem(
+                        row,
+                        codeInfo.col
+                    );
+
+                if (!itemNumber) {
+                    continue;
+                }
+
+
+                const exists =
+                    items.some(
+                        item =>
+                            item.item === itemNumber &&
+                            item.code === codeInfo.code
+                    );
+
+                if (exists) {
+                    continue;
+                }
+
+
+                /*
+                    Buscar columnas a partir del
+                    encabezado más cercano.
+                */
+                let columns = {
+                    item: -1,
+                    code: -1,
+                    description: -1,
+                    attributes: -1,
+                    quantity: -1,
+                    characteristics: -1,
+                    price: -1
+                };
+
+
+                let closestHeader = null;
+                let distance = Infinity;
+
+
+                for (const h of headers) {
+
+                    const d =
+                        Math.abs(
+                            h.row - r
+                        );
+
+                    if (d < distance) {
+
+                        distance = d;
+                        closestHeader = h;
+
+                    }
+
+                }
+
+
+                if (closestHeader) {
+
+                    columns =
+                        closestHeader.columns;
+
+                }
+
+
+                const description =
+                    findDescription(
+                        row,
+                        columns,
+                        codeInfo.col
+                    );
+
+
+                const characteristics =
+                    findCharacteristics(
+                        row,
+                        columns
+                    );
+
+
+                const attributes =
+                    parseAttributes(
+                        characteristics
+                    );
+
+
+                items.push({
+
+                    item: itemNumber,
+
+                    code: codeInfo.code,
+
+                    description,
+
+                    quantity:
+                        columns.quantity !== -1
+                            ? normalize(
+                                row[
+                                    columns.quantity
+                                ]
+                            )
+                            : "",
+
+                    price:
+                        columns.price !== -1
+                            ? normalize(
+                                row[
+                                    columns.price
+                                ]
+                            )
+                            : "",
+
+                    procedencia:
+                        attributes.procedencia,
+
+                    certificado:
+                        attributes.certificado
+
+                });
+
+            }
+
+
+            if (items.length) {
+
+                debugLines.push(
+                    `BÚSQUEDA INDEPENDIENTE: ` +
+                    `Lote ${lp.lot.number} ` +
+                    `/ Grupo ${lp.lot.group}: ` +
+                    `${items.length} ítems.`
+                );
+
+
+                results.push({
+
+                    lot: lp.lot,
+
+                    items,
+
+                    sheetName
+
+                });
 
             }
 
@@ -1273,38 +1878,112 @@ function parseSheet(rows, sheetName) {
 
     }
 
+
     return {
-        lots: result,
-        debug: sheetDebug
+        results,
+        debugLines
     };
 
 }
 
 
-function extractWorkbook(workbook) {
+/*
+    Combinar duplicados.
+*/
+function mergeResults(results) {
 
-    const allLots = [];
+    const map = new Map();
+
+
+    for (const result of results) {
+
+        const key =
+            `${result.sheetName}__` +
+            `${result.lot.number}__` +
+            `${result.lot.group}`;
+
+
+        if (!map.has(key)) {
+
+            map.set(key, {
+
+                sheetName:
+                    result.sheetName,
+
+                lot:
+                    result.lot,
+
+                items: []
+
+            });
+
+        }
+
+
+        const target =
+            map.get(key);
+
+
+        for (const item of result.items) {
+
+            const exists =
+                target.items.some(
+                    x =>
+                        x.item === item.item &&
+                        x.code === item.code
+                );
+
+
+            if (!exists) {
+
+                target.items.push(item);
+
+            }
+
+        }
+
+    }
+
+
+    return Array.from(
+        map.values()
+    );
+
+}
+
+
+/*
+    Procesar todo el workbook.
+*/
+function parseWorkbook(wb) {
+
+    const allResults = [];
     const debugLines = [];
 
-    for (const sheetName of workbook.SheetNames) {
+    for (const sheetName of wb.SheetNames) {
 
-        const normalizedSheet =
-            normalizeHeader(sheetName);
+        const normalizedName =
+            headerNormalize(sheetName);
+
 
         if (
-            IGNORED_SHEETS.has(normalizedSheet)
+            IGNORED_SHEETS.has(
+                normalizedName
+            )
         ) {
 
             debugLines.push(
-                `HOJA IGNORADA: "${sheetName}"`
+                `HOJA IGNORADA: ${sheetName}`
             );
 
             continue;
 
         }
 
+
         const sheet =
-            workbook.Sheets[sheetName];
+            wb.Sheets[sheetName];
+
 
         const rows =
             XLSX.utils.sheet_to_json(
@@ -1316,152 +1995,121 @@ function extractWorkbook(workbook) {
                 }
             );
 
+
         debugLines.push(
-            `\n========== HOJA: ${sheetName} ==========\n`
+            `\n================================`
         );
+
+        debugLines.push(
+            `HOJA: ${sheetName}`
+        );
+
+        debugLines.push(
+            `Filas: ${rows.length}`
+        );
+
+        debugLines.push(
+            `================================`
+        );
+
 
         const provider =
-            findProviderInSheet(rows);
+            findProvider(rows);
+
 
         debugLines.push(
-            `Proveedor detectado: ${
-                provider.name || "(no detectado)"
+            `Proveedor: ${
+                provider.name ||
+                "(no detectado)"
             }`
         );
+
 
         if (provider.ruc) {
 
             debugLines.push(
-                `RUC detectado: ${provider.ruc}`
+                `RUC: ${provider.ruc}`
             );
 
         }
+
 
         if (provider.ci) {
 
             debugLines.push(
-                `C.I. detectada: ${provider.ci}`
+                `C.I.: ${provider.ci}`
             );
 
         }
 
+
         const parsed =
-            parseSheet(rows, sheetName);
+            parseSheet(
+                rows,
+                sheetName
+            );
 
-        for (const line of parsed.debug) {
 
-            debugLines.push(line);
+        for (
+            const result of parsed.results
+        ) {
+
+            result.provider =
+                provider;
+
+            allResults.push(result);
 
         }
 
-        for (const lot of parsed.lots) {
 
-            lot.provider = provider;
-            lot.sheetName = sheetName;
-
-            allLots.push(lot);
-
-        }
+        debugLines.push(
+            ...parsed.debugLines
+        );
 
     }
 
+
     return {
-        lots: allLots,
-        debug: debugLines
+
+        results:
+            mergeResults(allResults),
+
+        debugLines
+
     };
 
 }
 
 
+/*
+    Nombre del catálogo.
+
+    Actualmente se mantiene el código.
+*/
 function catalogName(code) {
 
-    /*
-        Actualmente se conserva el código.
-        Si luego tienes una tabla de códigos/nombres,
-        puede conectarse aquí.
-    */
     return code;
 
 }
 
 
-function escapeCSV(value) {
-
-    if (
-        value === null ||
-        value === undefined
-    ) {
-        return "";
-    }
-
-    const text = String(value);
-
-    if (
-        text.includes('"') ||
-        text.includes(",") ||
-        text.includes("\n") ||
-        text.includes("\r")
-    ) {
-
-        return '"' +
-            text.replace(/"/g, '""') +
-            '"';
-
-    }
-
-    return text;
-
-}
-
-
-function createCSV(rows) {
-
-    const lines = [];
-
-    lines.push(
-        OUTPUT_HEADERS
-            .map(escapeCSV)
-            .join(",")
-    );
-
-    for (const row of rows) {
-
-        lines.push(
-            OUTPUT_HEADERS
-                .map(header =>
-                    escapeCSV(row[header])
-                )
-                .join(",")
-        );
-
-    }
-
-    /*
-        BOM UTF-8 para que Excel conserve
-        Número / Código / Descripción / etc.
-    */
-    return "\uFEFF" + lines.join("\r\n");
-
-}
-
-
+/*
+    Construir filas CSV.
+*/
 function buildCSVRows(lots) {
 
     const rows = [];
 
+
     for (const lotData of lots) {
 
-        const lot = lotData.lot;
+        const lot =
+            lotData.lot;
 
-        const provider =
-            lotData.provider || {};
 
         for (const item of lotData.items) {
 
-            /*
-                FILA PRINCIPAL
-            */
-            rows.push({
+            const common = {
 
                 "Número Lote":
                     lot.number,
@@ -1513,58 +2161,22 @@ function buildCSVRows(lots) {
                 "Descripción Atributo":
                     ""
 
+            };
+
+
+            rows.push({
+                ...common
             });
 
 
             /*
-                ATRIBUTO PROCEDENCIA
+                Procedencia.
             */
             if (item.procedencia) {
 
                 rows.push({
 
-                    "Número Lote":
-                        lot.number,
-
-                    "Número Grupo":
-                        lot.group,
-
-                    "Número Item":
-                        item.item,
-
-                    "Código de Producto":
-                        item.code,
-
-                    "Grupo Descripción":
-                        "Mantenimiento de Edificios de las Facultades - UNI 2026",
-
-                    "Nombre del Producto":
-                        item.description
-                            ? item.description +
-                              " - En Catálogo: " +
-                              catalogName(item.code)
-                            : "",
-
-                    "Cantidad":
-                        "_NO_APLICA_",
-
-                    "Contrato Abierto":
-                        "Si",
-
-                    "Abastecimiento Simultáneo":
-                        lot.simultaneous || "No",
-
-                    "Tipo Contrato Abierto":
-                        lot.contractType || "",
-
-                    "Cantidad Adjudicada":
-                        "_NO_APLICA_",
-
-                    "Porcentaje de Distribución":
-                        "_NO_APLICA_",
-
-                    "Precio Unitario Adjudicado":
-                        "",
+                    ...common,
 
                     "Atributo":
                         "procedencia",
@@ -1578,54 +2190,13 @@ function buildCSVRows(lots) {
 
 
             /*
-                ATRIBUTO CERTIFICADO
+                Certificado.
             */
             if (item.certificado) {
 
                 rows.push({
 
-                    "Número Lote":
-                        lot.number,
-
-                    "Número Grupo":
-                        lot.group,
-
-                    "Número Item":
-                        item.item,
-
-                    "Código de Producto":
-                        item.code,
-
-                    "Grupo Descripción":
-                        "Mantenimiento de Edificios de las Facultades - UNI 2026",
-
-                    "Nombre del Producto":
-                        item.description
-                            ? item.description +
-                              " - En Catálogo: " +
-                              catalogName(item.code)
-                            : "",
-
-                    "Cantidad":
-                        "_NO_APLICA_",
-
-                    "Contrato Abierto":
-                        "Si",
-
-                    "Abastecimiento Simultáneo":
-                        lot.simultaneous || "No",
-
-                    "Tipo Contrato Abierto":
-                        lot.contractType || "",
-
-                    "Cantidad Adjudicada":
-                        "_NO_APLICA_",
-
-                    "Porcentaje de Distribución":
-                        "_NO_APLICA_",
-
-                    "Precio Unitario Adjudicado":
-                        "",
+                    ...common,
 
                     "Atributo":
                         "nro_certificado_origen_nacional",
@@ -1641,84 +2212,117 @@ function buildCSVRows(lots) {
 
     }
 
+
     return rows;
 
 }
 
 
-function mergeDuplicateLots(lots) {
+/*
+    CSV seguro.
+*/
+function csvEscape(value) {
 
-    const map = new Map();
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
 
-    for (const lot of lots) {
 
-        const key =
-            `${lot.sheetName}__${lot.lot.number}__${lot.lot.group}`;
+    const text =
+        String(value);
 
-        if (!map.has(key)) {
 
-            map.set(key, {
+    if (
+        /[",\r\n]/.test(text)
+    ) {
 
-                ...lot,
-
-                items: []
-
-            });
-
-        }
-
-        const target = map.get(key);
-
-        for (const item of lot.items) {
-
-            const itemKey =
-                `${item.item}__${item.code}`;
-
-            const exists =
-                target.items.some(
-                    x =>
-                        `${x.item}__${x.code}` === itemKey
-                );
-
-            if (!exists) {
-
-                target.items.push(item);
-
-            }
-
-        }
+        return '"' +
+            text.replace(
+                /"/g,
+                '""'
+            ) +
+            '"';
 
     }
 
-    return Array.from(map.values());
+
+    return text;
 
 }
 
 
+function createCSV(rows) {
+
+    const lines = [];
+
+
+    lines.push(
+        OUTPUT_HEADERS
+            .map(csvEscape)
+            .join(",")
+    );
+
+
+    for (const row of rows) {
+
+        lines.push(
+            OUTPUT_HEADERS
+                .map(
+                    header =>
+                        csvEscape(
+                            row[header]
+                        )
+                )
+                .join(",")
+        );
+
+    }
+
+
+    return "\uFEFF" +
+        lines.join("\r\n");
+
+}
+
+
+/*
+    Vista previa.
+*/
 function showPreview(rows) {
 
     previewTable.innerHTML = "";
 
-    if (!rows.length) return;
+
+    if (!rows.length) {
+        return;
+    }
+
 
     const thead =
         document.createElement("thead");
 
-    const trHead =
+
+    const headRow =
         document.createElement("tr");
+
 
     for (const header of OUTPUT_HEADERS) {
 
         const th =
             document.createElement("th");
 
-        th.textContent = header;
+        th.textContent =
+            header;
 
-        trHead.appendChild(th);
+        headRow.appendChild(th);
 
     }
 
-    thead.appendChild(trHead);
+
+    thead.appendChild(headRow);
 
     previewTable.appendChild(thead);
 
@@ -1726,9 +2330,7 @@ function showPreview(rows) {
     const tbody =
         document.createElement("tbody");
 
-    /*
-        Mostrar máximo 300 filas en pantalla.
-    */
+
     for (
         const row of rows.slice(0, 300)
     ) {
@@ -1736,171 +2338,90 @@ function showPreview(rows) {
         const tr =
             document.createElement("tr");
 
+
         for (const header of OUTPUT_HEADERS) {
 
             const td =
                 document.createElement("td");
 
+
             td.textContent =
                 row[header] ?? "";
+
 
             tr.appendChild(td);
 
         }
 
+
         tbody.appendChild(tr);
 
     }
+
 
     previewTable.appendChild(tbody);
 
 }
 
 
-function setMessage(type, text) {
-
-    message.innerHTML =
-        `<div class="${type}">${text}</div>`;
-
-}
-
-
-function updateStats(lots, rows) {
-
-    const itemCount =
-        lots.reduce(
-            (sum, lot) =>
-                sum + lot.items.length,
-            0
-        );
-
-    const lotCount =
-        lots.length;
-
-    stats.innerHTML = `
-
-        <div class="stat">
-            <strong>Lotes:</strong>
-            ${lotCount}
-        </div>
-
-        <div class="stat">
-            <strong>Ítems:</strong>
-            ${itemCount}
-        </div>
-
-        <div class="stat">
-            <strong>Filas CSV:</strong>
-            ${rows.length}
-        </div>
-
-    `;
-
-}
-
-
-function createDownload(csv) {
-
-    downloadArea.innerHTML = "";
-
-    const blob =
-        new Blob(
-            [csv],
-            {
-                type:
-                    "text/csv;charset=utf-8;"
-            }
-        );
-
-    const url =
-        URL.createObjectURL(blob);
-
-    const link =
-        document.createElement("a");
-
-    link.href = url;
-
-    link.download =
-        "licitacion_484012.csv";
-
-    link.textContent =
-        "⬇ Descargar CSV";
-
-    link.style.display =
-        "inline-block";
-
-    link.style.marginTop =
-        "10px";
-
-    link.style.background =
-        "#059669";
-
-    link.style.padding =
-        "12px 20px";
-
-    link.style.borderRadius =
-        "8px";
-
-    link.style.color =
-        "white";
-
-    link.style.textDecoration =
-        "none";
-
-    link.style.fontWeight =
-        "bold";
-
-    downloadArea.appendChild(link);
-
-}
-
-
+/*
+    Procesar archivo.
+*/
 async function processFile(file) {
 
-    setMessage(
-        "success",
-        "Leyendo Excel..."
-    );
+    message.innerHTML = "";
 
     debug.textContent = "";
+
     stats.innerHTML = "";
+
     previewTable.innerHTML = "";
+
     downloadArea.innerHTML = "";
+
 
     try {
 
         const buffer =
             await file.arrayBuffer();
 
-        workbookData =
+
+        workbook =
             XLSX.read(
                 buffer,
                 {
-                    type: "array"
+                    type: "array",
+                    cellDates: false
                 }
             );
 
-        const result =
-            extractWorkbook(workbookData);
-
-        const lots =
-            mergeDuplicateLots(
-                result.lots
-            );
-
-        parsedData = {
-            lots,
-            debug: result.debug
-        };
 
         debug.textContent =
-            result.debug.join("\n");
+            `Hojas encontradas:\n\n` +
+            workbook.SheetNames
+                .map(
+                    x => `• ${x}`
+                )
+                .join("\n");
 
-        if (!lots.length) {
+
+        const parsed =
+            parseWorkbook(workbook);
+
+
+        parsedLots =
+            parsed.results;
+
+
+        debug.textContent =
+            parsed.debugLines.join("\n");
+
+
+        if (!parsedLots.length) {
 
             setMessage(
                 "error",
-                "Error: El Excel fue abierto correctamente, pero no se detectaron lotes con ítems adjudicados."
+                "El Excel fue abierto correctamente, pero no se detectaron lotes con ítems adjudicados."
             );
 
             generateBtn.disabled = true;
@@ -1909,34 +2430,93 @@ async function processFile(file) {
 
         }
 
+
         const itemCount =
-            lots.reduce(
+            parsedLots.reduce(
                 (sum, lot) =>
                     sum + lot.items.length,
                 0
             );
 
-        setMessage(
-            "success",
-            `Excel procesado correctamente. ` +
-            `Se detectaron ${lots.length} lote(s) ` +
-            `y ${itemCount} ítem(s).`
-        );
+
+        const lotCount =
+            parsedLots.length;
+
+
+        stats.innerHTML = `
+
+            <div class="stat">
+                <strong>Lotes:</strong>
+                ${lotCount}
+            </div>
+
+            <div class="stat">
+                <strong>Ítems:</strong>
+                ${itemCount}
+            </div>
+
+            <div class="stat">
+                <strong>Hojas procesadas:</strong>
+                ${
+                    workbook.SheetNames.length
+                }
+            </div>
+
+        `;
+
+
+        message.innerHTML = `
+
+            <div class="success">
+
+                Excel procesado correctamente.
+
+                <br><br>
+
+                <strong>
+                    ${lotCount}
+                </strong>
+                lote(s) detectado(s).
+
+                <br>
+
+                <strong>
+                    ${itemCount}
+                </strong>
+                ítem(s) detectado(s).
+
+            </div>
+
+        `;
+
 
         generateBtn.disabled = false;
+
 
     } catch (error) {
 
         console.error(error);
 
-        setMessage(
-            "error",
-            "Error al leer el Excel: " +
-            error.message
-        );
+
+        message.innerHTML = `
+
+            <div class="error">
+
+                Error al leer el Excel:
+
+                ${escapeHTML(
+                    error.message
+                )}
+
+            </div>
+
+        `;
+
 
         debug.textContent =
-            error.stack || String(error);
+            error.stack ||
+            String(error);
+
 
         generateBtn.disabled = true;
 
@@ -1945,60 +2525,152 @@ async function processFile(file) {
 }
 
 
+/*
+    Generar.
+*/
 generateBtn.addEventListener(
     "click",
     () => {
 
-        if (!parsedData || !parsedData.lots.length) {
-
-            setMessage(
-                "error",
-                "No hay datos para generar."
-            );
+        if (
+            !parsedLots.length
+        ) {
 
             return;
 
         }
 
+
         try {
 
             const rows =
                 buildCSVRows(
-                    parsedData.lots
+                    parsedLots
                 );
+
 
             const csv =
                 createCSV(rows);
 
-            createDownload(csv);
+
+            const blob =
+                new Blob(
+                    [csv],
+                    {
+                        type:
+                            "text/csv;charset=utf-8;"
+                    }
+                );
+
+
+            const url =
+                URL.createObjectURL(
+                    blob
+                );
+
+
+            downloadArea.innerHTML = `
+
+                <a
+                    class="download"
+                    href="${url}"
+                    download="licitacion_484012.csv"
+                >
+                    ⬇ Descargar CSV
+                </a>
+
+            `;
+
 
             showPreview(rows);
 
-            updateStats(
-                parsedData.lots,
-                rows
-            );
 
-            setMessage(
-                "success",
-                `CSV generado correctamente: ` +
-                `${rows.length} filas.`
-            );
+            stats.innerHTML += `
+
+                <div class="stat">
+                    <strong>
+                        Filas CSV:
+                    </strong>
+                    ${rows.length}
+                </div>
+
+            `;
+
+
+            message.innerHTML = `
+
+                <div class="success">
+
+                    CSV generado correctamente.
+
+                    <br>
+
+                    ${rows.length}
+                    filas generadas.
+
+                </div>
+
+            `;
 
         } catch (error) {
 
             console.error(error);
 
-            setMessage(
-                "error",
-                "Error al generar el CSV: " +
-                error.message
-            );
+            message.innerHTML = `
+
+                <div class="error">
+
+                    Error al generar CSV:
+                    ${escapeHTML(
+                        error.message
+                    )}
+
+                </div>
+
+            `;
 
         }
 
     }
 );
+
+
+function setMessage(
+    type,
+    text
+) {
+
+    message.innerHTML =
+        `<div class="${type}">${text}</div>`;
+
+}
+
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
 
 </script>
 
