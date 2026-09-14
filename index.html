@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -491,5 +490,1298 @@ generateBtn.addEventListener("click", generateCSV);
 
 /* =========================================================
    CARGAR EXCEL
-===================================================
-```
+========================================================= */
+
+async function loadExcel(file) {
+
+    statusBox.textContent = "";
+    statusBox.className = "status";
+
+    previewBox.style.display = "none";
+
+    if (!file) {
+        showError("No se seleccionó ningún archivo.");
+        return;
+    }
+
+    /*
+     * No dependemos solamente de file.type porque
+     * algunos navegadores devuelven MIME vacío para .xls/.xlsx.
+     */
+    if (!/\.(xlsx|xls)$/i.test(file.name)) {
+
+        showError(
+            "El archivo seleccionado no tiene extensión .xlsx o .xls."
+        );
+
+        return;
+    }
+
+    fileName.textContent = file.name;
+
+    try {
+
+        showOk("Leyendo Excel...");
+
+        const buffer = await file.arrayBuffer();
+
+        workbook = XLSX.read(buffer, {
+            type: "array",
+            cellDates: false,
+            cellNF: false,
+            cellText: false
+        });
+
+        console.log(
+            "Hojas encontradas:",
+            workbook.SheetNames
+        );
+
+        lots = extractLots(workbook);
+
+        console.log(
+            "Lotes encontrados:",
+            lots
+        );
+
+        if (!lots.length) {
+
+            throw new Error(
+                "El Excel fue abierto correctamente, pero no se " +
+                "detectaron lotes con ítems adjudicados."
+            );
+        }
+
+        lotSelect.innerHTML = "";
+
+        lots.forEach(function(lot, index) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = String(index);
+
+            option.textContent =
+                "Lote " +
+                lot.number +
+                " — " +
+                (lot.faculty || "Sin descripción") +
+                " (" +
+                lot.items.length +
+                " ítems)";
+
+            lotSelect.appendChild(option);
+
+        });
+
+        lotSelect.disabled = false;
+
+        const first = lots[0];
+
+        if (first.provider) {
+            providerInput.value = first.provider;
+        }
+
+        if (first.ruc) {
+            rucInput.value = first.ruc;
+        }
+
+        generateBtn.disabled = false;
+
+        updateInfo();
+
+        showOk(
+            "Excel cargado correctamente. " +
+            "Se encontraron " +
+            lots.length +
+            " lote(s)."
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        workbook = null;
+        lots = [];
+
+        lotSelect.innerHTML =
+            '<option value="">Cargá primero el Excel</option>';
+
+        lotSelect.disabled = true;
+        generateBtn.disabled = true;
+
+        showError(
+            "No se pudo leer el Excel: " +
+            error.message
+        );
+    }
+}
+
+
+/* =========================================================
+   EXTRAER LOTES
+========================================================= */
+
+function extractLots(wb) {
+
+    const result = [];
+
+    wb.SheetNames.forEach(function(sheetName) {
+
+        const normalizedSheet =
+            normalize(sheetName);
+
+        /*
+         * La hoja de ítems generales no contiene adjudicación.
+         */
+        if (
+            normalizedSheet.startsWith("items")
+        ) {
+            return;
+        }
+
+        const ws = wb.Sheets[sheetName];
+
+        if (!ws) {
+            return;
+        }
+
+        const rows =
+            XLSX.utils.sheet_to_json(ws, {
+                header: 1,
+                defval: "",
+                raw: true
+            });
+
+        console.log(
+            "Procesando hoja:",
+            sheetName,
+            "Filas:",
+            rows.length
+        );
+
+        let sheetProvider = "";
+        let sheetRuc = "";
+
+        /*
+         * Buscar proveedor/RUC en las primeras filas.
+         */
+        for (
+            let i = 0;
+            i < Math.min(rows.length, 25);
+            i++
+        ) {
+
+            const row = rows[i];
+
+            const rowText =
+                row
+                    .map(function(v) {
+                        return String(v ?? "");
+                    })
+                    .join(" ");
+
+            if (/Adjudicado\s*:/i.test(rowText)) {
+
+                const parsed =
+                    parseProvider(rowText);
+
+                if (parsed.name) {
+                    sheetProvider =
+                        parsed.name;
+                }
+
+                if (parsed.ruc) {
+                    sheetRuc =
+                        parsed.ruc;
+                }
+            }
+
+        }
+
+
+        let currentLot = null;
+        let headerFound = false;
+
+        for (
+            let i = 0;
+            i < rows.length;
+            i++
+        ) {
+
+            const row = rows[i];
+
+            const cells =
+                row.map(function(v) {
+                    return String(v ?? "").trim();
+                });
+
+            const firstCell =
+                cells[0] || "";
+
+            const whole =
+                cells
+                    .filter(Boolean)
+                    .join(" ")
+                    .trim();
+
+
+            /* -------------------------------------------------
+               DETECTAR LOTE
+            ------------------------------------------------- */
+
+            const lotText =
+                findLotText(cells);
+
+            if (lotText) {
+
+                /*
+                 * Guardar el lote anterior.
+                 */
+                if (
+                    currentLot &&
+                    currentLot.items.length
+                ) {
+
+                    result.push(currentLot);
+
+                }
+
+                currentLot =
+                    parseLotHeader(lotText);
+
+                currentLot.sheetName =
+                    sheetName;
+
+                currentLot.provider =
+                    sheetProvider;
+
+                currentLot.ruc =
+                    sheetRuc;
+
+                headerFound = false;
+
+                continue;
+            }
+
+
+            /* -------------------------------------------------
+               DETECTAR ENCABEZADO DE ÍTEMS
+            ------------------------------------------------- */
+
+            const normalizedFirst =
+                normalize(firstCell);
+
+            const normalizedSecond =
+                normalize(cells[1] || "");
+
+            const normalizedWhole =
+                normalize(whole);
+
+            /*
+             * Forma normal:
+             * Item | Codigo Catalogo | ...
+             */
+            if (
+                normalizedFirst === "item" &&
+                normalizedSecond === "codigo catalogo"
+            ) {
+
+                headerFound = true;
+                continue;
+            }
+
+            /*
+             * También aceptamos encabezados aunque
+             * haya columnas vacías/intermedias.
+             */
+            if (
+                normalizedWhole.includes("codigo catalogo") &&
+                normalizedWhole.includes("item")
+            ) {
+
+                headerFound = true;
+                continue;
+            }
+
+
+            /* -------------------------------------------------
+               DETECTAR FILA DE ÍTEM
+            ------------------------------------------------- */
+
+            if (
+                headerFound &&
+                currentLot &&
+                isPositiveInteger(row[0]) &&
+                clean(row[1]) !== ""
+            ) {
+
+                const item = {
+
+                    item:
+                        toText(row[0]),
+
+                    code:
+                        clean(toText(row[1])),
+
+                    description:
+                        clean(toText(row[2])),
+
+                    quantity:
+                        toText(row[4]),
+
+                    characteristics:
+                        clean(toText(row[5])),
+
+                    price:
+                        toText(row[6])
+
+                };
+
+                /*
+                 * Evitar interpretar filas que no sean
+                 * códigos de catálogo.
+                 */
+                if (item.code) {
+
+                    currentLot.items.push(item);
+
+                }
+
+            }
+
+        }
+
+
+        /*
+         * Guardar último lote de la hoja.
+         */
+        if (
+            currentLot &&
+            currentLot.items.length
+        ) {
+
+            result.push(currentLot);
+
+        }
+
+    });
+
+
+    /* =====================================================
+       ELIMINAR DUPLICADOS
+    ===================================================== */
+
+    const unique = [];
+    const seen = new Set();
+
+    result.forEach(function(lot) {
+
+        const key =
+            lot.number +
+            "|" +
+            lot.sheetName;
+
+        if (!seen.has(key)) {
+
+            seen.add(key);
+            unique.push(lot);
+
+        }
+
+    });
+
+    return unique;
+}
+
+
+/* =========================================================
+   ENCONTRAR TEXTO DE LOTE
+========================================================= */
+
+function findLotText(cells) {
+
+    for (const cell of cells) {
+
+        const text =
+            clean(cell);
+
+        if (!text) {
+            continue;
+        }
+
+        /*
+         * Ejemplos aceptados:
+         *
+         * Lote I - FACULTAD ... - Grupo 1
+         * Lote II - FACULTAD ... - Grupo 1
+         * Lote III - FACULTAD ... - Grupo 1
+         */
+
+        if (
+            /^Lote\s+(I|II|III)\b/i.test(text)
+        ) {
+
+            return text;
+
+        }
+
+    }
+
+    /*
+     * Segundo intento sobre toda la fila.
+     */
+    const joined =
+        cells
+            .filter(Boolean)
+            .join(" ");
+
+    const match =
+        joined.match(
+            /Lote\s+(I|II|III)\b.*?(?:Grupo\s+\d+)?/i
+        );
+
+    if (match) {
+        return match[0];
+    }
+
+    return "";
+}
+
+
+/* =========================================================
+   PARSEAR CABECERA DEL LOTE
+========================================================= */
+
+function parseLotHeader(text) {
+
+    const value =
+        clean(text);
+
+    let number = "";
+    let faculty = "";
+    let group = "1";
+
+    /*
+     * Obtener número romano.
+     */
+    const lotMatch =
+        value.match(
+            /Lote\s+(I|II|III)\b/i
+        );
+
+    if (lotMatch) {
+
+        number =
+            romanToNumber(
+                lotMatch[1]
+            );
+
+    }
+
+
+    /*
+     * Obtener grupo.
+     */
+    const groupMatch =
+        value.match(
+            /Grupo\s+(\d+)/i
+        );
+
+    if (groupMatch) {
+
+        group =
+            groupMatch[1];
+
+    }
+
+
+    /*
+     * Obtener descripción/facultad.
+     */
+    faculty =
+        value
+            .replace(
+                /^Lote\s+(I|II|III)\s*-\s*/i,
+                ""
+            )
+            .replace(
+                /\s*-\s*Grupo\s+\d+.*$/i,
+                ""
+            )
+            .trim();
+
+    const contract =
+        parseContract(value);
+
+    return {
+
+        number,
+
+        group,
+
+        faculty,
+
+        contractOpen:
+            contract.contractOpen,
+
+        simultaneous:
+            contract.simultaneous,
+
+        sheetName: "",
+
+        provider: "",
+
+        ruc: "",
+
+        items: []
+
+    };
+}
+
+
+/* =========================================================
+   CONTRATO
+========================================================= */
+
+function parseContract(text) {
+
+    const result = {
+
+        contractOpen: "Si",
+
+        simultaneous: "No"
+
+    };
+
+    const sim =
+        text.match(
+            /Abastecimiento\s+Simultaneo\s*:\s*([^,]+)/i
+        );
+
+    if (sim) {
+
+        result.simultaneous =
+            /^s[ií]$/i.test(
+                sim[1].trim()
+            )
+                ? "Si"
+                : "No";
+
+    }
+
+    return result;
+}
+
+
+/* =========================================================
+   CONSTRUIR FILAS CSV
+========================================================= */
+
+function buildRows(lot) {
+
+    const rows = [];
+
+    lot.items.forEach(function(item) {
+
+        const catalog =
+            catalogName(item.code);
+
+        const productName =
+            item.description +
+            " - En Catálogo: " +
+            catalog;
+
+
+        /*
+         * FILA PRINCIPAL
+         */
+        rows.push([
+
+            lot.number,
+
+            lot.group,
+
+            item.item,
+
+            item.code,
+
+            "Mantenimiento de Edificios de las Facultades - UNI 2026",
+
+            productName,
+
+            "_NO_APLICA_",
+
+            "Si",
+
+            lot.simultaneous || "No",
+
+            "monto",
+
+            "_NO_APLICA_",
+
+            "_NO_APLICA_",
+
+            "",
+
+            "",
+
+            ""
+
+        ]);
+
+
+        /*
+         * ATRIBUTO 1
+         */
+        rows.push([
+
+            "", "", "", "", "", "", "", "",
+            "", "", "", "", "",
+
+            "procedencia",
+
+            ""
+
+        ]);
+
+
+        /*
+         * ATRIBUTO 2
+         */
+        rows.push([
+
+            "", "", "", "", "", "", "", "",
+            "", "", "", "", "",
+
+            "nro_certificado_origen_nacional",
+
+            ""
+
+        ]);
+
+    });
+
+    return rows;
+}
+
+
+/* =========================================================
+   GENERAR CSV
+========================================================= */
+
+function generateCSV() {
+
+    if (!lots.length) {
+
+        showError(
+            "Primero cargá el archivo Excel."
+        );
+
+        return;
+    }
+
+    const index =
+        Number(lotSelect.value);
+
+    const lot =
+        lots[index];
+
+    if (!lot) {
+
+        showError(
+            "Seleccioná un lote."
+        );
+
+        return;
+    }
+
+    let provider =
+        clean(providerInput.value);
+
+    let ruc =
+        clean(rucInput.value);
+
+    if (!provider) {
+        provider =
+            lot.provider || "";
+    }
+
+    if (!ruc) {
+        ruc =
+            lot.ruc || "";
+    }
+
+    if (!provider) {
+
+        showError(
+            "Ingresá el nombre del proveedor."
+        );
+
+        return;
+    }
+
+    if (!ruc) {
+
+        showError(
+            "Ingresá el RUC del proveedor."
+        );
+
+        return;
+    }
+
+
+    const license =
+        "LICITACIÓN: 484012 - Mantenimiento de Edificios de las Facultades - UNI 2026";
+
+    const system =
+        "SISTEMA DE ADJUDICACIÓN:  lote";
+
+    const providerLine =
+        "PROVEEDOR: " +
+        provider +
+        " - RUC: " +
+        ruc;
+
+    const observation =
+        "OBSERVACIÓN: En caso de que una fila no sera cargada eliminar la fila y los atributos de la lista. ";
+
+
+    const rows =
+        buildRows(lot);
+
+    const lines = [];
+
+
+    lines.push(
+        csvMeta(license)
+    );
+
+    lines.push(
+        csvMeta(system)
+    );
+
+    lines.push(
+        csvMeta(providerLine)
+    );
+
+    lines.push(
+        csvMeta(observation)
+    );
+
+    lines.push("");
+
+
+    lines.push(
+        HEADERS
+            .map(function(value, index) {
+                return csvField(
+                    value,
+                    index
+                );
+            })
+            .join(";")
+    );
+
+
+    rows.forEach(function(row) {
+
+        lines.push(
+
+            row
+                .map(function(value, index) {
+
+                    return csvField(
+                        value,
+                        index
+                    );
+
+                })
+                .join(";")
+
+        );
+
+    });
+
+
+    const csvText =
+        "\uFEFF" +
+        lines.join("\r\n") +
+        "\r\n";
+
+
+    const blob =
+        new Blob(
+            [csvText],
+            {
+                type:
+                    "text/csv;charset=utf-8;"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+    const a =
+        document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+        "484012-Mantenimiento-de-Edificios-de-las-Facultades-UNI-2026-Lote-" +
+        lot.number +
+        ".csv";
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+    setTimeout(
+        function() {
+            URL.revokeObjectURL(url);
+        },
+        1000
+    );
+
+
+    showOk(
+        "CSV generado correctamente: " +
+        lot.items.length +
+        " ítems / " +
+        (lot.items.length * 3) +
+        " filas de datos."
+    );
+
+    renderPreview(lot);
+}
+
+
+/* =========================================================
+   CSV
+========================================================= */
+
+function csvMeta(value) {
+
+    return '"' +
+        String(value)
+            .replace(/"/g, '""') +
+        '"';
+
+}
+
+
+function csvField(value, index) {
+
+    let v =
+        value === null ||
+        value === undefined
+            ? ""
+            : String(value);
+
+
+    const noQuoteColumns =
+        new Set([
+            0,
+            1,
+            2,
+            6,
+            10,
+            11,
+            12
+        ]);
+
+
+    if (
+        noQuoteColumns.has(index)
+    ) {
+
+        return v.replace(
+            /\r?\n/g,
+            " "
+        );
+
+    }
+
+
+    if (v === "") {
+        return "";
+    }
+
+
+    return '"' +
+        v
+            .replace(/"/g, '""')
+            .replace(/\r?\n/g, " ") +
+        '"';
+}
+
+
+/* =========================================================
+   CATÁLOGO
+========================================================= */
+
+function catalogName(code) {
+
+    const cleanCode =
+        clean(code);
+
+    if (
+        CATALOG_BY_CODE[
+            cleanCode
+        ]
+    ) {
+
+        return CATALOG_BY_CODE[
+            cleanCode
+        ];
+
+    }
+
+    return "";
+}
+
+
+/* =========================================================
+   PREVISUALIZACIÓN
+========================================================= */
+
+function renderPreview(lot) {
+
+    const rows =
+        buildRows(lot);
+
+    const previewRows =
+        rows.slice(
+            0,
+            Math.min(
+                rows.length,
+                15
+            )
+        );
+
+
+    let html =
+        "<table><thead><tr>";
+
+
+    HEADERS.forEach(function(h) {
+
+        html +=
+            "<th>" +
+            escapeHtml(h) +
+            "</th>";
+
+    });
+
+
+    html +=
+        "</tr></thead><tbody>";
+
+
+    previewRows.forEach(function(row) {
+
+        html += "<tr>";
+
+        row.forEach(function(cell) {
+
+            html +=
+                "<td>" +
+                escapeHtml(cell) +
+                "</td>";
+
+        });
+
+        html += "</tr>";
+
+    });
+
+
+    html +=
+        "</tbody></table>";
+
+
+    previewBox.innerHTML =
+        html;
+
+    previewBox.style.display =
+        "block";
+}
+
+
+/* =========================================================
+   INFORMACIÓN
+========================================================= */
+
+function updateInfo() {
+
+    if (!lots.length) {
+        return;
+    }
+
+    const lot =
+        lots[
+            Number(
+                lotSelect.value
+            )
+        ];
+
+    if (!lot) {
+        return;
+    }
+
+
+    if (lot.provider) {
+        providerInput.value =
+            lot.provider;
+    }
+
+    if (lot.ruc) {
+        rucInput.value =
+            lot.ruc;
+    }
+
+
+    infoBox.textContent =
+
+        "Lote: " +
+        lot.number +
+
+        "\nFacultad: " +
+        lot.faculty +
+
+        "\nGrupo: " +
+        lot.group +
+
+        "\nÍtems detectados: " +
+        lot.items.length +
+
+        "\nContrato Abierto: Si" +
+
+        "\nAbastecimiento Simultáneo: " +
+        (lot.simultaneous || "No") +
+
+        "\nSalida: " +
+        (lot.items.length * 3) +
+        " filas de datos.";
+}
+
+
+/* =========================================================
+   PROVEEDOR
+========================================================= */
+
+function parseProvider(text) {
+
+    let value =
+        clean(text);
+
+    let ruc = "";
+
+
+    const rucMatch =
+        value.match(
+            /RUC\s*[:\-]?\s*([0-9.\-]+)/i
+        );
+
+
+    if (rucMatch) {
+
+        ruc =
+            rucMatch[1]
+                .replace(/\D/g, "");
+
+
+        value =
+            value.replace(
+                /\s*[-–—]?\s*RUC\s*[:\-]?\s*[0-9.\-]+/i,
+                ""
+            );
+
+    }
+
+
+    value =
+        value
+            .replace(
+                /[-–—]\s*$/,
+                ""
+            )
+            .trim();
+
+
+    return {
+
+        name: value,
+
+        ruc: ruc
+
+    };
+}
+
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+
+function isPositiveInteger(value) {
+
+    if (
+        typeof value === "number"
+    ) {
+
+        return (
+            Number.isInteger(value) &&
+            value > 0
+        );
+
+    }
+
+    return /^\d+$/.test(
+        String(
+            value ?? ""
+        ).trim()
+    );
+}
+
+
+function toText(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+
+    if (
+        typeof value === "number" &&
+        Number.isInteger(value)
+    ) {
+
+        return String(value);
+
+    }
+
+
+    return String(value);
+}
+
+
+function clean(value) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /\uFEFF/g,
+            ""
+        )
+        .replace(
+            /\r/g,
+            ""
+        )
+        .trim();
+}
+
+
+function normalize(value) {
+
+    return clean(value)
+
+        .toLowerCase()
+
+        .normalize("NFD")
+
+        .replace(
+            /[\u0300-\u036f]/g,
+            ""
+        )
+
+        .replace(
+            /\s+/g,
+            " "
+        );
+}
+
+
+function romanToNumber(value) {
+
+    const v =
+        String(value)
+            .toUpperCase();
+
+    if (v === "I") {
+        return "1";
+    }
+
+    if (v === "II") {
+        return "2";
+    }
+
+    if (v === "III") {
+        return "3";
+    }
+
+    return v;
+}
+
+
+/* =========================================================
+   MENSAJES
+========================================================= */
+
+function showOk(message) {
+
+    statusBox.textContent =
+        message;
+
+    statusBox.className =
+        "status ok";
+}
+
+
+function showError(message) {
+
+    statusBox.textContent =
+        message;
+
+    statusBox.className =
+        "status error";
+}
+
+
+function escapeHtml(value) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+</script>
+
+</body>
+</html>
